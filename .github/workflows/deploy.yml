@@ -1,10 +1,10 @@
-name: Deploy cuesense.html via SFTP
+name: Deploy index.html via SFTP
 
 on:
   push:
     branches: [main]
     paths:
-      - cuesense.html
+      - index.html
       - .github/workflows/deploy.yml
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Upload cuesense.html over SFTP
+      - name: Upload index.html over SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.5
         with:
           server: ${{ secrets.SFTP_HOST }}
@@ -23,5 +23,5 @@ jobs:
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           ssh_private_key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          local_path: ./cuesense.html
-          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}/cuesense.html
+          local_path: ./index.html
+          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}/index.html
