@@ -97,23 +97,24 @@ python3 -m http.server 8000
 Le workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) s'exécute à chaque
 push sur `main` qui modifie `index.html` (et peut être lancé manuellement depuis l'onglet
 **Actions**). Il envoie le fichier sur le serveur en **SFTP** via
-[`wlixcc/SFTP-Deploy-Action`](https://github.com/wlixcc/SFTP-Deploy-Action), à l'emplacement
-`/var/www/yohann.paris/cuesense/index.html`.
+[`wlixcc/SFTP-Deploy-Action`](https://github.com/wlixcc/SFTP-Deploy-Action), dans le dossier
+du site configuré par les secrets ci-dessous.
 
 `sftp_only: true` est indispensable — l'utilisateur de déploiement est restreint au SFTP
 (voir ci-dessous), l'action ne doit donc pas ouvrir de shell SSH.
 
 ### Secrets GitHub requis
 
-À définir dans **Settings → Secrets and variables → Actions** :
+À définir dans **Settings → Secrets and variables → Actions** (les valeurs restent dans les
+secrets, jamais dans le dépôt) :
 
-| Secret | Valeur |
+| Secret | Contenu |
 |---|---|
-| `SFTP_HOST` | `yohann.paris` |
-| `SFTP_PORT` | `22` |
-| `SFTP_USERNAME` | `cuesense-deploy` |
-| `SFTP_PASSWORD` | le mot de passe de l'utilisateur de déploiement |
-| `SFTP_REMOTE_DIR` | `/cuesense` (chemin *à l'intérieur* de la prison chroot) |
+| `SFTP_HOST` | hôte du serveur |
+| `SFTP_PORT` | port SFTP (généralement `22`) |
+| `SFTP_USERNAME` | utilisateur de déploiement restreint au SFTP |
+| `SFTP_PASSWORD` | mot de passe de cet utilisateur |
+| `SFTP_REMOTE_DIR` | dossier de destination *à l'intérieur* de la prison chroot |
 
 `SFTP_PRIVATE_KEY` est laissé vide — l'action bascule alors sur l'authentification par mot
 de passe.
@@ -121,21 +122,21 @@ de passe.
 ### Configuration du serveur (une seule fois)
 
 Le serveur utilise un utilisateur dédié et verrouillé, restreint au SFTP, qui ne peut écrire
-que dans le dossier du site. La structure :
+que dans le dossier du site. Le principe :
 
 ```
-/var/www/yohann.paris          root:root                    ← prison chroot (doit rester propriété de root)
-└── cuesense/                  cuesense-deploy:sftponly      ← dossier accessible en écriture (apparaît comme /cuesense dans la prison)
+<prison-chroot>/               root:root              ← doit rester propriété de root
+└── <dossier-du-site>/         <user>:<groupe-sftp>   ← dossier accessible en écriture (= SFTP_REMOTE_DIR dans la prison)
     └── index.html
 ```
 
-- L'utilisateur `cuesense-deploy` n'a pas de shell (`/usr/sbin/nologin`) et est enfermé
-  (chroot) dans `/var/www/yohann.paris` via un bloc `Match` dans
-  `/etc/ssh/sshd_config.d/cuesense-sftp.conf`, avec `ForceCommand internal-sftp` et
-  l'authentification par mot de passe activée pour ce seul utilisateur.
+- L'utilisateur de déploiement n'a pas de shell (`/usr/sbin/nologin`) et est enfermé
+  (chroot) dans le répertoire de la prison via un bloc `Match` dans un fichier
+  `/etc/ssh/sshd_config.d/`, avec `ForceCommand internal-sftp` et l'authentification par
+  mot de passe activée pour ce seul utilisateur.
 - Le répertoire de la prison chroot doit appartenir à `root` et ne pas être accessible en
-  écriture au groupe ni aux autres ; le sous-dossier `cuesense/` (et les fichiers qu'il
-  contient) doit appartenir à `cuesense-deploy`.
+  écriture au groupe ni aux autres ; le sous-dossier du site (et les fichiers qu'il
+  contient) doit appartenir à l'utilisateur de déploiement.
 
 ## Structure du projet
 
