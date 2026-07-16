@@ -1,0 +1,27 @@
+name: Deploy cuesense.html via SFTP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - cuesense.html
+      - .github/workflows/deploy.yml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload cuesense.html over SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          port: ${{ secrets.SFTP_PORT }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          ssh_private_key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          local_path: ./cuesense.html
+          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}/cuesense.html
