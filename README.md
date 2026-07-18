@@ -47,16 +47,20 @@ ressortir les points aberrants (mauvais contacts, contacts irréguliers).
   dépasse un seuil réglable (0,8 g par défaut), avec une fenêtre réfractaire pour éviter les
   doubles comptages.
 
-### Trois façons d'importer des données
+### Quatre façons de travailler les données
 
 1. **Capteur en direct** — connexion et graphiques en temps réel (nécessite Web Bluetooth).
-2. **Import de fichier** — chargez un enregistrement `.csv`/`.tsv`/`.txt` exporté depuis
+2. **Enregistrement CSV** — démarrez/arrêtez l’acquisition pour sauvegarder les échantillons
+   horodatés (accélération, gyroscope et angles) dans un fichier réimportable.
+3. **Import de fichier** — chargez un enregistrement `.csv`/`.tsv`/`.txt` exporté depuis
    l'application mobile **WITMOTION**. Les en-têtes sont détectés automatiquement ; à défaut,
    l'ordre de colonnes par défaut de WitMotion et une fréquence saisie à la main sont
    utilisés s'il n'y a pas de colonne temps.
-3. **Démo** — une session synthétique, pratique pour explorer l'interface sans matériel.
+4. **Démo** — une session synthétique, pratique pour explorer l'interface sans matériel.
 
-Les résultats peuvent être exportés en **JSON** (`cue-scope-coups.json`).
+Les résultats peuvent être exportés en **JSON** (`cue-scope-coups.json`). Chaque coup reçoit
+aussi un **score CueSense sur 100**, fondé sur sa rectitude, sa fluidité, sa stabilité
+angulaire et sa régularité par rapport à la séance.
 
 ## Compatibilité des navigateurs
 
