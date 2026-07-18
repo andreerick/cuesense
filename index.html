@@ -371,19 +371,19 @@ function addStroke(win, fs, t){
 }
 function clampScore(v){ return Math.max(0,Math.min(100,v)); }
 function updateScores(){
-  const score={lateralPenalty:4,backDeliveryRatio:2,ratioPenalty:20,angularPenalty:12,
+  const config={lateralPenalty:4,backDeliveryRatio:2,ratioPenalty:20,angularPenalty:12,
     minDuration:.001,minAverage:.01,straightness:.35,fluidity:.25,stability:.20,regularity:.20};
   const a=S.strokes, mean=f=>a.reduce((sum,s)=>sum+f(s),0)/a.length;
   const avgSpeed=mean(s=>s.speed), avgDeliv=mean(s=>s.deliv);
   a.forEach(s=>{
-    const straight=clampScore(100-s.latPct*score.lateralPenalty);
-    const fluid=clampScore(100-Math.abs((s.back/Math.max(s.deliv,score.minDuration))-score.backDeliveryRatio)*score.ratioPenalty);
-    const stable=clampScore(100-s.angDrift*score.angularPenalty);
-    const regular=a.length<2 ? 100 : clampScore(100-
-      Math.abs(s.speed-avgSpeed)/Math.max(avgSpeed,score.minAverage)*100-
-      Math.abs(s.deliv-avgDeliv)/Math.max(avgDeliv,score.minAverage)*100);
-    s.score=Math.round(score.straightness*straight+score.fluidity*fluid+
-      score.stability*stable+score.regularity*regular);
+    const straight=clampScore(100-s.latPct*config.lateralPenalty);
+    const fluid=clampScore(100-Math.abs((s.back/Math.max(s.deliv,config.minDuration))-config.backDeliveryRatio)*config.ratioPenalty);
+    const stable=clampScore(100-s.angDrift*config.angularPenalty);
+    const speedDeviation=Math.abs(s.speed-avgSpeed)/Math.max(avgSpeed,config.minAverage)*100;
+    const deliveryDeviation=Math.abs(s.deliv-avgDeliv)/Math.max(avgDeliv,config.minAverage)*100;
+    const regular=a.length<2 ? 100 : clampScore(100-(speedDeviation+deliveryDeviation)/2);
+    s.score=Math.round(config.straightness*straight+config.fluidity*fluid+
+      config.stability*stable+config.regularity*regular);
   });
 }
 
@@ -560,13 +560,13 @@ function setRecording(active){
   $('btnCsv').disabled=active||!S.recording.length;
 }
 $('btnRecord').onclick=()=>{
-  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Connectez le capteur d’abord.'); return; }
+  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Le capteur doit être connecté d’abord.'); return; }
   if(!S.recordingActive) S.recording=[];
   setRecording(!S.recordingActive);
 };
 $('btnCsv').onclick=()=>{
   const delimiter=';';
-  const rows=[['Timestamp','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'].join(delimiter)];
+  const rows=[['Temps','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'].join(delimiter)];
   S.recording.forEach(s=>rows.push([s.timestamp,s.ax,s.ay,s.az,s.gx,s.gy,s.gz,s.r,s.p,s.y].join(delimiter)));
   const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
   const a=document.createElement('a'); a.href=url; a.download='cuesense-session.csv'; a.click();
