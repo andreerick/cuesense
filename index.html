@@ -197,8 +197,8 @@ const $ = id => document.getElementById(id);
 const G = 9.80665;
 const SCORE_CONFIG={
   lateralPenalty:4, backDeliveryRatio:2, ratioPenalty:20, angularPenalty:12,
-  minDuration:.001, minAverage:.01,
-  straightness:.35, fluidity:.25, stability:.20, regularity:.20 // rectitude prioritaire, total 1
+  epsilonDuration:.001, epsilonAverage:.01,
+  straightness:.35, fluidity:.25, stability:.20, regularity:.20 // rectitude prioritaire, poids normalisés = 1,0
 };
 const CSV_HEADERS=['Temps','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'];
 const CSV_FIELDS=['timestamp','ax','ay','az','gx','gy','gz','r','p','y'];
@@ -377,21 +377,25 @@ function addStroke(win, fs, t){
   renderStrokes();
 }
 function clampScore(v){ return Math.max(0,Math.min(100,v)); }
-function percentageDeviationFromAverage(value, average){ return Math.abs(value-average)/Math.max(average,SCORE_CONFIG.minAverage)*100; }
+function percentageDeviationFromAverage(value, average){
+  return average<SCORE_CONFIG.epsilonAverage ? 0 : Math.abs(value-average)/average*100;
+}
 function updateScores(){
   const a=S.strokes, mean=f=>a.reduce((sum,s)=>sum+f(s),0)/a.length;
   const avgSpeed=mean(s=>s.speed), avgDeliv=mean(s=>s.deliv);
   a.forEach(s=>{
     const straight=clampScore(100-s.latPct*SCORE_CONFIG.lateralPenalty);
-    const backDeliveryActual=s.back/Math.max(s.deliv,SCORE_CONFIG.minDuration);
+    const backDeliveryActual=s.back/Math.max(s.deliv,SCORE_CONFIG.epsilonDuration);
     const fluid=clampScore(100-Math.abs(backDeliveryActual-SCORE_CONFIG.backDeliveryRatio)*SCORE_CONFIG.ratioPenalty);
     const stable=clampScore(100-s.angDrift*SCORE_CONFIG.angularPenalty);
+    const technical=SCORE_CONFIG.straightness*straight+SCORE_CONFIG.fluidity*fluid+
+      SCORE_CONFIG.stability*stable;
+    if(a.length<2){ s.score=Math.round(technical/(1-SCORE_CONFIG.regularity)); return; }
     const speedDeviation=percentageDeviationFromAverage(s.speed,avgSpeed);
     const deliveryDeviation=percentageDeviationFromAverage(s.deliv,avgDeliv);
-    const regular=a.length<2 ? 100 :
+    const regular=
       (clampScore(100-speedDeviation)+clampScore(100-deliveryDeviation))/2;
-    s.score=Math.round(SCORE_CONFIG.straightness*straight+SCORE_CONFIG.fluidity*fluid+
-      SCORE_CONFIG.stability*stable+SCORE_CONFIG.regularity*regular);
+    s.score=Math.round(technical+SCORE_CONFIG.regularity*regular);
   });
 }
 
@@ -583,7 +587,7 @@ $('btnCsv').onclick=()=>{
   S.recording.forEach(s=>rows.push(CSV_FIELDS.map(k=>s[k]).join(delimiter)));
   const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
   const a=document.createElement('a'); a.href=url; a.download='cuesense-session.csv'; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),0);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 $('selRate').onchange=async()=>{ if(S.chW && S.device?.gatt?.connected){
   await writeCmd([0xFF,0xAA,0x69,0x88,0xB5]);
