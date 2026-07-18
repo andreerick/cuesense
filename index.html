@@ -86,6 +86,8 @@ a{color:var(--chalk)}
     <option value="0x06">10 Hz</option>
   </select>
   <button id="btnDisc" disabled>Couper</button>
+  <button id="btnRecord">Enregistrer</button>
+  <button id="btnCsv" disabled>Exporter CSV</button>
   <button id="btnDemo" title="Session synthétique pour tester l'interface">Démo</button>
 </div>
 <div class="row" style="margin-top:8px">
@@ -187,12 +189,19 @@ const S = {
   samples: [],          // {t, ax..az (g), gx..gz (°/s), r,p,y (°)}
   live: false, fs: 200, fsMeasured: 0,
   strokes: [], sel: -1,
-  device: null, chW: null,
+  device: null, chW: null, recording: [], recordingActive: false,
   lastTrig: -1e9, pendTrig: -1,
   overview: null,       // {mag:[], t0, fs} pour session importée
 };
 const $ = id => document.getElementById(id);
 const G = 9.80665;
+const SCORE_CONFIG={
+  lateralPenalty:4, backDeliveryRatio:2, ratioPenalty:20, angularPenalty:12,
+  epsilonDuration:.001, epsilonAverage:.01,
+  straightness:.35, fluidity:.25, stability:.20, regularity:.20 // rectitude prioritaire, poids normalisés = 1,0
+};
+const CSV_HEADERS=['Temps','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'];
+const CSV_FIELDS=['timestamp','ax','ay','az','gx','gy','gz','r','p','y'];
 const SVC='0000ffe5-0000-1000-8000-00805f9a34fb',
       CHN='0000ffe4-0000-1000-8000-00805f9a34fb',
       CHW='0000ffe9-0000-1000-8000-00805f9a34fb';
@@ -307,6 +316,7 @@ let rateCount=0, rateT=0;
 function pushSample(s){
   s.t = performance.now()/1000;
   S.samples.push(s);
+  if(S.recordingActive) S.recording.push({...s, timestamp: Date.now()});
   if(S.samples.length > S.fs*40) S.samples = S.samples.slice(-S.fs*30);
   // mesure de fréquence
   rateCount++;
@@ -363,7 +373,30 @@ function addStroke(win, fs, t){
   if(win.length<10) return;
   const a=analyze(win,fs); a.t=t; a.id=S.strokes.length+1;
   S.strokes.push(a); S.sel=S.strokes.length-1;
+  updateScores();
   renderStrokes();
+}
+function clampScore(v){ return Math.max(0,Math.min(100,v)); }
+function percentageDeviationFromAverage(value, average){
+  return average<SCORE_CONFIG.epsilonAverage ? 0 : Math.abs(value-average)/average*100;
+}
+function updateScores(){
+  const a=S.strokes, mean=f=>a.reduce((sum,s)=>sum+f(s),0)/a.length;
+  const avgSpeed=mean(s=>s.speed), avgDeliv=mean(s=>s.deliv);
+  a.forEach(s=>{
+    const straight=clampScore(100-s.latPct*SCORE_CONFIG.lateralPenalty);
+    const backDeliveryActual=s.back/Math.max(s.deliv,SCORE_CONFIG.epsilonDuration);
+    const fluid=clampScore(100-Math.abs(backDeliveryActual-SCORE_CONFIG.backDeliveryRatio)*SCORE_CONFIG.ratioPenalty);
+    const stable=clampScore(100-s.angDrift*SCORE_CONFIG.angularPenalty);
+    const technical=SCORE_CONFIG.straightness*straight+SCORE_CONFIG.fluidity*fluid+
+      SCORE_CONFIG.stability*stable;
+    if(a.length<2){ s.score=Math.round(technical/(1-SCORE_CONFIG.regularity)); return; }
+    const speedDeviation=percentageDeviationFromAverage(s.speed,avgSpeed);
+    const deliveryDeviation=percentageDeviationFromAverage(s.deliv,avgDeliv);
+    const regular=
+      (clampScore(100-speedDeviation)+clampScore(100-deliveryDeviation))/2;
+    s.score=Math.round(technical+SCORE_CONFIG.regularity*regular);
+  });
 }
 
 /* ============ rendu coups ============ */
@@ -374,9 +407,9 @@ function renderStrokes(){
   if(!S.strokes.length){ w.innerHTML='<div class="empty">Aucun coup. Connecte le capteur, lance la démo, ou importe un enregistrement.</div>';
     $('detStats').innerHTML=''; $('sumStats').innerHTML='<div class="empty" style="grid-column:1/-1">—</div>';
     fit($('cDet'))[0].clearRect(0,0,9999,9999); return; }
-  let h='<table><tr><th>#</th><th>vitesse<br>m/s</th><th>pic<br>g</th><th>backswing<br>ms</th><th>pause<br>ms</th><th>délivr.<br>ms</th><th>dév.lat.<br>%</th><th>dist.<br>cm</th></tr>';
+  let h='<table><tr><th>#</th><th>score<br>/100</th><th>vitesse<br>m/s</th><th>pic<br>g</th><th>backswing<br>ms</th><th>pause<br>ms</th><th>délivr.<br>ms</th><th>dév.lat.<br>%</th><th>dist.<br>cm</th></tr>';
   S.strokes.forEach((s,i)=>{
-    h+=`<tr class="${i===S.sel?'sel':''}" data-i="${i}"><td>${s.id}</td><td>${fmt(s.speed)}</td><td>${fmt(s.magPeak,1)}</td><td>${Math.round(s.back*1000)}</td><td>${Math.round(s.pause*1000)}</td><td>${Math.round(s.deliv*1000)}</td><td>${fmt(s.latPct,0)}</td><td><input class="distIn" type="number" inputmode="decimal" data-d="${i}" value="${s.dist??''}" placeholder="—"></td></tr>`;
+    h+=`<tr class="${i===S.sel?'sel':''}" data-i="${i}"><td>${s.id}</td><td>${s.score}</td><td>${fmt(s.speed)}</td><td>${fmt(s.magPeak,1)}</td><td>${Math.round(s.back*1000)}</td><td>${Math.round(s.pause*1000)}</td><td>${Math.round(s.deliv*1000)}</td><td>${fmt(s.latPct,0)}</td><td><input class="distIn" type="number" inputmode="decimal" data-d="${i}" value="${s.dist??''}" placeholder="—"></td></tr>`;
   });
   w.innerHTML=h+'</table>';
   w.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{S.sel=+tr.dataset.i;renderStrokes();});
@@ -427,6 +460,7 @@ function renderSummary(){
   const cv=f=>{const x=col(f);const m=mu(x);return m?fmt(sd(x)/m*100,1)+' %':'—'};
   let h =
     st('coups', a.length)+
+    st('score CueSense', ms(s=>s.score,0,' /100'))+
     st('vitesse', ms(s=>s.speed,2,' m/s'))+
     st('CV vitesse', cv(s=>s.speed))+
     st('ratio back/délivr.', ms(s=>s.deliv>0?s.back/s.deliv:NaN,1))+
@@ -480,10 +514,10 @@ function drawScatter(){
   $('scatLeg').textContent='n='+pts.length+' · ajustement d ≈ '+fmt(k,1)+'·v² (pointillés) — les points loin de la courbe = contact irrégulier';
 }
 $('thr').oninput=()=>{$('thrV').textContent=$('thr').value+' g'};
-$('axSel').onchange=()=>{ S.strokes=S.strokes.map(s=>{const r=analyze(s.win,s.fs);r.t=s.t;r.id=s.id;r.dist=s.dist;return r;}); renderStrokes(); };
+$('axSel').onchange=()=>{ S.strokes=S.strokes.map(s=>{const r=analyze(s.win,s.fs);r.t=s.t;r.id=s.id;r.dist=s.dist;return r;}); updateScores(); renderStrokes(); };
 $('btnClear').onclick=()=>{S.strokes=[];S.sel=-1;S.overview=null;$('overviewP').classList.add('hidden');$('scatterP').classList.add('hidden');renderStrokes();};
 $('btnJson').onclick=()=>{
-  const out=S.strokes.map(s=>({id:s.id,speed_ms:+fmt(s.speed),peak_g:+fmt(s.magPeak,1),
+  const out=S.strokes.map(s=>({id:s.id,score:s.score,speed_ms:+fmt(s.speed),peak_g:+fmt(s.magPeak,1),
     back_ms:Math.round(s.back*1000),pause_ms:Math.round(s.pause*1000),deliv_ms:Math.round(s.deliv*1000),
     lateral_pct:+fmt(s.latPct,0),angular_deg:+fmt(s.angDrift,1),axis:s.cue,dist_cm:s.dist??null}));
   const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
@@ -515,7 +549,12 @@ $('btnConnect').onclick=async()=>{
     try{ dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'WT'},{namePrefix:'BWT'},{namePrefix:'HC'}],optionalServices:[SVC]}); }
     catch(e){ if(e.name==='NotFoundError'&&!e.message.includes('cancel')) dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC]}); else throw e; }
     S.device=dev;
-    dev.addEventListener('gattserverdisconnected',()=>{ setStatus('<b>déconnecté</b>'); rafOn=false; $('btnDisc').disabled=true; });
+    dev.addEventListener('gattserverdisconnected',()=>{
+      setStatus('<b>déconnecté</b>');
+      rafOn=false;
+      $('btnDisc').disabled=true;
+      if(S.recordingActive) setRecording(false);
+    });
     const srv=await dev.gatt.connect();
     const svc=await srv.getPrimaryService(SVC);
     const chN=await svc.getCharacteristic(CHN);
@@ -532,6 +571,24 @@ $('btnConnect').onclick=async()=>{
   }catch(e){ if(e.name!=='NotFoundError') setStatus('<b style="color:var(--red)">erreur : '+e.message+'</b>'); }
 };
 $('btnDisc').onclick=()=>{ S.device?.gatt?.disconnect(); };
+function setRecording(active){
+  S.recordingActive=active;
+  $('btnRecord').textContent=active?'Arrêter l’enregistrement':'Enregistrer';
+  $('btnCsv').disabled=active||!S.recording.length;
+}
+$('btnRecord').onclick=()=>{
+  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Veuillez connecter le capteur avant d’enregistrer.'); return; }
+  if(!S.recordingActive) S.recording=[];
+  setRecording(!S.recordingActive);
+};
+$('btnCsv').onclick=()=>{
+  const delimiter=';';
+  const rows=[CSV_HEADERS.join(delimiter)];
+  S.recording.forEach(s=>rows.push(CSV_FIELDS.map(k=>s[k]).join(delimiter)));
+  const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  const a=document.createElement('a'); a.href=url; a.download='cuesense-session.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
 $('selRate').onchange=async()=>{ if(S.chW && S.device?.gatt?.connected){
   await writeCmd([0xFF,0xAA,0x69,0x88,0xB5]);
   await writeCmd([0xFF,0xAA,0x03,parseInt($('selRate').value,16),0x00]);
