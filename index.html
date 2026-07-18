@@ -195,9 +195,13 @@ const S = {
 };
 const $ = id => document.getElementById(id);
 const G = 9.80665;
-const SCORE_CONFIG={lateralPenalty:4,backDeliveryRatio:2,ratioPenalty:20,angularPenalty:12,
-  minDuration:.001,minAverage:.01,straightness:.35,fluidity:.25,stability:.20,regularity:.20};
+const SCORE_CONFIG={
+  lateralPenalty:4, backDeliveryRatio:2, ratioPenalty:20, angularPenalty:12,
+  minDuration:.001, minAverage:.01,
+  straightness:.35, fluidity:.25, stability:.20, regularity:.20 // rectitude prioritaire, total 1
+};
 const CSV_HEADERS=['Temps','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'];
+const CSV_FIELDS=['timestamp','ax','ay','az','gx','gy','gz','r','p','y'];
 const SVC='0000ffe5-0000-1000-8000-00805f9a34fb',
       CHN='0000ffe4-0000-1000-8000-00805f9a34fb',
       CHW='0000ffe9-0000-1000-8000-00805f9a34fb';
@@ -373,7 +377,7 @@ function addStroke(win, fs, t){
   renderStrokes();
 }
 function clampScore(v){ return Math.max(0,Math.min(100,v)); }
-function relativeDeviation(value, average){ return Math.abs(value-average)/Math.max(average,SCORE_CONFIG.minAverage)*100; }
+function percentageDeviationFromAverage(value, average){ return Math.abs(value-average)/Math.max(average,SCORE_CONFIG.minAverage)*100; }
 function updateScores(){
   const a=S.strokes, mean=f=>a.reduce((sum,s)=>sum+f(s),0)/a.length;
   const avgSpeed=mean(s=>s.speed), avgDeliv=mean(s=>s.deliv);
@@ -382,9 +386,10 @@ function updateScores(){
     const backDeliveryActual=s.back/Math.max(s.deliv,SCORE_CONFIG.minDuration);
     const fluid=clampScore(100-Math.abs(backDeliveryActual-SCORE_CONFIG.backDeliveryRatio)*SCORE_CONFIG.ratioPenalty);
     const stable=clampScore(100-s.angDrift*SCORE_CONFIG.angularPenalty);
-    const speedDeviation=relativeDeviation(s.speed,avgSpeed);
-    const deliveryDeviation=relativeDeviation(s.deliv,avgDeliv);
-    const regular=a.length<2 ? 100 : clampScore(100-(speedDeviation+deliveryDeviation)/2);
+    const speedDeviation=percentageDeviationFromAverage(s.speed,avgSpeed);
+    const deliveryDeviation=percentageDeviationFromAverage(s.deliv,avgDeliv);
+    const regular=a.length<2 ? 100 :
+      (clampScore(100-speedDeviation)+clampScore(100-deliveryDeviation))/2;
     s.score=Math.round(SCORE_CONFIG.straightness*straight+SCORE_CONFIG.fluidity*fluid+
       SCORE_CONFIG.stability*stable+SCORE_CONFIG.regularity*regular);
   });
@@ -540,7 +545,12 @@ $('btnConnect').onclick=async()=>{
     try{ dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'WT'},{namePrefix:'BWT'},{namePrefix:'HC'}],optionalServices:[SVC]}); }
     catch(e){ if(e.name==='NotFoundError'&&!e.message.includes('cancel')) dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC]}); else throw e; }
     S.device=dev;
-    dev.addEventListener('gattserverdisconnected',()=>{ setStatus('<b>déconnecté</b>'); rafOn=false; $('btnDisc').disabled=true; if(S.recordingActive) setRecording(false); });
+    dev.addEventListener('gattserverdisconnected',()=>{
+      setStatus('<b>déconnecté</b>');
+      rafOn=false;
+      $('btnDisc').disabled=true;
+      if(S.recordingActive) setRecording(false);
+    });
     const srv=await dev.gatt.connect();
     const svc=await srv.getPrimaryService(SVC);
     const chN=await svc.getCharacteristic(CHN);
@@ -563,14 +573,14 @@ function setRecording(active){
   $('btnCsv').disabled=active||!S.recording.length;
 }
 $('btnRecord').onclick=()=>{
-  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Le capteur doit être connecté d’abord.'); return; }
+  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Veuillez connecter le capteur avant d’enregistrer.'); return; }
   if(!S.recordingActive) S.recording=[];
   setRecording(!S.recordingActive);
 };
 $('btnCsv').onclick=()=>{
   const delimiter=';';
   const rows=[CSV_HEADERS.join(delimiter)];
-  S.recording.forEach(s=>rows.push([s.timestamp,s.ax,s.ay,s.az,s.gx,s.gy,s.gz,s.r,s.p,s.y].join(delimiter)));
+  S.recording.forEach(s=>rows.push(CSV_FIELDS.map(k=>s[k]).join(delimiter)));
   const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
   const a=document.createElement('a'); a.href=url; a.download='cuesense-session.csv'; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),0);
