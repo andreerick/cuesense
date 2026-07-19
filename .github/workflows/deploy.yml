@@ -1,11 +1,8 @@
-name: Deploy index.html via SFTP
+name: Deploy site via SFTP
 
 on:
   push:
     branches: [main]
-    paths:
-      - index.html
-      - .github/workflows/deploy.yml
   workflow_dispatch:
 
 jobs:
@@ -15,7 +12,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Upload index.html over SFTP
+      - name: Stage deploy files
+        run: |
+          mkdir deploy
+          git ls-files --cached --others --exclude-standard \
+            | grep -v '^\.github/' \
+            | grep -v '\.md$' \
+            | tar cf - -T - \
+            | tar xf - -C deploy
+
+      - name: Upload site over SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.5
         with:
           server: ${{ secrets.SFTP_HOST }}
@@ -23,6 +29,6 @@ jobs:
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           ssh_private_key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          local_path: ./index.html
-          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}/index.html
+          local_path: './deploy/*'
+          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}
           sftp_only: true
