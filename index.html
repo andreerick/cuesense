@@ -3,152 +3,302 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cue-Scope · WitMotion snooker</title>
-<style>
-:root{
-  --bg:#0B2117; --panel:#0F2B1E; --panel2:#123324; --line:#1E4530;
-  --ivory:#EFE9DA; --dim:#7FA08F; --chalk:#57B8C9; --red:#D64541; --amber:#D9A441;
-  --mono:'SF Mono','Cascadia Code',Menlo,Consolas,'Liberation Mono',monospace;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ivory);font:14px/1.45 var(--mono);-webkit-text-size-adjust:100%}
-body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-.wrap{max-width:980px;margin:0 auto;padding:14px 14px 40px}
-.eyebrow{font-size:10px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
-h1{font-size:20px;font-weight:600;letter-spacing:.04em;margin:2px 0 2px}
-h1 .tick{color:var(--chalk)}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
-.status{font-size:11px;color:var(--dim);text-align:right}
-.status b{color:var(--ivory);font-weight:600}
-.status .on{color:var(--chalk)}
-.rec{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);vertical-align:1px;margin-right:5px;animation:blink 1.2s steps(2) infinite}
-@media (prefers-reduced-motion:reduce){.rec{animation:none}}
-@keyframes blink{50%{opacity:.15}}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button,select,input[type=file]::file-selector-button{
-  font:12px var(--mono);letter-spacing:.05em;color:var(--ivory);background:var(--panel2);
-  border:1px solid var(--line);border-radius:4px;padding:10px 14px;min-height:40px;cursor:pointer}
-button.primary{border-color:var(--chalk);color:var(--chalk)}
-button:disabled{opacity:.4;cursor:default}
-button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--chalk);outline-offset:2px}
-select{appearance:none}
-input[type=file]{color:var(--dim);font-size:11px;max-width:100%}
-.banner{border:1px dashed var(--line);border-left:3px solid var(--amber);background:var(--panel);
-  padding:10px 12px;font-size:12px;color:var(--dim);margin:10px 0;border-radius:4px}
-.banner b{color:var(--ivory)}
-.tabs{display:flex;gap:0;margin:14px 0 12px;border:1px solid var(--line);border-radius:5px;overflow:hidden;width:fit-content}
-.tabs button{border:0;border-radius:0;background:transparent;padding:9px 20px;color:var(--dim)}
-.tabs button.active{background:var(--panel2);color:var(--chalk)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:12px}
-.panel h2{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
-canvas{width:100%;height:120px;display:block;touch-action:pan-y}
-canvas.tall{height:230px}
-.readout{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
-.cell{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
-.cell .k{font-size:9px;letter-spacing:.15em;color:var(--dim);text-transform:uppercase}
-.cell .v{font-size:15px;font-variant-numeric:tabular-nums}
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--dim)}
-.controls label{display:flex;align-items:center;gap:6px}
-input[type=range]{accent-color:var(--chalk);width:130px}
-.distIn{width:58px;background:var(--panel2);border:1px solid var(--line);color:var(--ivory);font:12px var(--mono);padding:5px 6px;border-radius:4px;text-align:right}
-table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
-th{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}
-th:first-child,td:first-child{text-align:left}
-td{text-align:right;padding:7px 6px;border-bottom:1px solid rgba(30,69,48,.5);cursor:pointer}
-tr.sel td{background:var(--panel2);color:var(--chalk)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-top:10px}
-.legend{font-size:10px;color:var(--dim);margin-top:6px}
-.legend i{font-style:normal;padding-right:10px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-.hidden{display:none}
-.split{display:grid;grid-template-columns:1fr;gap:12px}
-@media(min-width:760px){.split{grid-template-columns:5fr 7fr}}
-a{color:var(--chalk)}
-.empty{color:var(--dim);font-size:12px;padding:18px 4px;text-align:center}
-</style>
+<meta name="theme-color" content="#111111">
+<title>CueSense · Analyse du geste au snooker</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='24' fill='none' stroke='%2327AE60' stroke-width='6' stroke-dasharray='118 33' transform='rotate(-45 32 34)'/%3E%3Cline x1='16' y1='50' x2='50' y2='16' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="cuesense.css">
 </head>
 <body>
-<div class="wrap">
-<header>
-  <div>
-    <div class="eyebrow">WitMotion BLE · Snooker</div>
-    <h1>Cue<span class="tick">//</span>Scope</h1>
+
+<!-- ===================== SPLASH ===================== -->
+<div id="splash">
+  <svg class="logo" viewBox="0 0 96 96" aria-hidden="true">
+    <circle cx="46" cy="52" r="34" fill="none" stroke="#27AE60" stroke-width="7"
+            stroke-linecap="round" stroke-dasharray="168 46" transform="rotate(-50 46 52)"/>
+    <circle cx="38" cy="60" r="9" fill="#FFFFFF"/>
+    <line x1="26" y1="72" x2="68" y2="30" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+    <path d="M72 20a16 16 0 0 1 11 11" fill="none" stroke="#27AE60" stroke-width="5" stroke-linecap="round"/>
+    <path d="M78 10a26 26 0 0 1 17 17" fill="none" stroke="#27AE60" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <div class="wordmark">Cue<em>Sense</em></div>
+  <div class="tagline">Analyse du geste au snooker</div>
+  <div class="progress"><i></i></div>
+  <div class="charge">Chargement…</div>
+  <div class="v">v1.0.0</div>
+</div>
+
+<!-- ===================== 1 · JOUEUR ===================== -->
+<section id="viewJoueur" class="screen">
+  <h1 class="screen-title">1. Identification du joueur</h1>
+  <div class="stepper" data-step="1"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
   </div>
-  <div class="status" id="status"><b>déconnecté</b><br>— Hz</div>
-</header>
-
-<div class="row">
-  <button class="primary" id="btnConnect">Connecter le capteur</button>
-  <select id="selRate" title="Fréquence capteur">
-    <option value="0x0B" selected>200 Hz</option>
-    <option value="0x09">100 Hz</option>
-    <option value="0x08">50 Hz</option>
-    <option value="0x06">10 Hz</option>
-  </select>
-  <button id="btnDisc" disabled>Couper</button>
-  <button id="btnRecord">Enregistrer</button>
-  <button id="btnCsv" disabled>Exporter CSV</button>
-  <button id="btnDemo" title="Session synthétique pour tester l'interface">Démo</button>
-</div>
-<div class="row" style="margin-top:8px">
-  <input type="file" id="fileIn" accept=".csv,.txt,.tsv">
-  <label class="controls" style="gap:4px" id="fsWrap">fréquence du fichier si pas de colonne temps :
-    <input id="fsIn" type="number" value="200" min="1" max="1000" style="width:64px;background:var(--panel2);border:1px solid var(--line);color:var(--ivory);font:12px var(--mono);padding:6px;border-radius:4px"> Hz
-  </label>
-</div>
-<div class="banner hidden" id="noBle">
-  <b>Web Bluetooth indisponible dans ce navigateur.</b><br>
-  Sur iPhone : ouvrir cette page dans <b>Bluefy</b> (App Store) pour le direct,
-  ou enregistrer avec l'app WITMOTION puis importer le fichier exporté ci-dessus.
-</div>
-
-<div class="tabs">
-  <button id="tabLive" class="active">Direct</button>
-  <button id="tabStrokes">Coups <span id="nStrokes"></span></button>
-</div>
-
-<!-- ===================== DIRECT ===================== -->
-<section id="viewLive">
-  <div class="panel">
-    <h2>Axe queue <span id="cueAxLbl" style="color:var(--chalk)">—</span> · longitudinal <span style="color:var(--ivory)">▬</span> · latéral <span style="color:var(--chalk)">▬</span> (g)</h2>
-    <canvas id="cCue" class="tall"></canvas>
-    <div class="controls" style="margin-top:8px">
-      <button id="btnCal">Calibrer l'axe — limage 2 s</button>
-      <label><input type="checkbox" id="chk3ax"> vue 3 axes</label>
+  <h2 class="hero">Bienvenue</h2>
+  <p class="hero-sub">Veuillez vous identifier</p>
+  <div class="field">
+    <label for="playerName">Nom du joueur</label>
+    <div class="input-wrap">
+      <input type="text" id="playerName" placeholder="Votre nom" autocomplete="name">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
     </div>
   </div>
-  <div id="threeAx" class="hidden">
-  <div class="panel">
-    <h2>Accélération (g)</h2>
-    <canvas id="cAcc"></canvas>
-    <div class="legend"><i><span class="dot" style="background:var(--ivory)"></span>X</i><i><span class="dot" style="background:var(--chalk)"></span>Y</i><i><span class="dot" style="background:var(--amber)"></span>Z</i></div>
-  </div>
-  <div class="panel">
-    <h2>Vitesse angulaire (°/s)</h2>
-    <canvas id="cGyr"></canvas>
-  </div>
-  <div class="panel">
-    <h2>Angles (°)</h2>
-    <canvas id="cAng"></canvas>
-    <div class="readout" id="angRead">
-      <div class="cell"><div class="k">Roll</div><div class="v" id="vR">—</div></div>
-      <div class="cell"><div class="k">Pitch</div><div class="v" id="vP">—</div></div>
-      <div class="cell"><div class="k">Yaw</div><div class="v" id="vY">—</div></div>
+  <div class="field">
+    <label for="playerLevel">Niveau</label>
+    <div class="input-wrap">
+      <select id="playerLevel">
+        <option>Débutant</option>
+        <option selected>Intermédiaire</option>
+        <option>Avancé</option>
+        <option>Professionnel</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </div>
   </div>
+  <button class="btn btn-primary" id="btnPlayerGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnPlayerReset">Changer de joueur</button>
+  <div class="about">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".5" fill="currentColor"/></svg>
+    <div>
+      <h3>À propos de CueSense</h3>
+      <p>CueSense est une application qui analyse votre geste au snooker grâce à un capteur
+      inertiel WT9011DCL fixé à l'arrière de la queue. Elle vous aide à progresser en vous
+      fournissant des données précises et objectives.</p>
+    </div>
+  </div>
+  <div class="version">v1.0.0</div>
+</section>
+
+<!-- ===================== 2 · CONNEXION ===================== -->
+<section id="viewConn" class="screen hidden">
+  <h1 class="screen-title">2. Connexion du capteur</h1>
+  <div class="stepper" data-step="2"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+  </div>
+  <h2 class="hero" id="connName">Capteur WT9011DCL</h2>
+  <p class="hero-sub" id="connSub">Aucun capteur connecté</p>
+
+  <div class="state err" id="connState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+    <div class="tx"><b id="connStateTxt">Déconnecté</b><span id="connStateSub">Connectez le capteur pour commencer</span></div>
+    <i class="pip"></i>
+  </div>
+  <div class="state" id="battState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="17" height="9" rx="2.5"/><path d="M21.5 11v3"/><rect id="battFill" x="4" y="10" width="0" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+    <div class="tx"><b>Batterie <span id="battPct">—</span></b><span id="battSub">Niveau lu depuis le capteur</span></div>
+    <i class="pip" style="opacity:0" id="battPip"></i>
+  </div>
+
+  <div class="card">
+    <div class="controls" style="justify-content:space-between">
+      <label for="selRate" style="font-weight:600">Fréquence du capteur</label>
+      <select id="selRate" title="Fréquence capteur">
+        <option value="0x0B" selected>200 Hz</option>
+        <option value="0x09">100 Hz</option>
+        <option value="0x08">50 Hz</option>
+        <option value="0x06">10 Hz</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnConnect">Connecter le capteur</button>
+  <button class="btn btn-primary hidden" id="btnConnGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnDisc" disabled>Déconnecter</button>
+
+  <div class="banner hidden" id="noBle">
+    <b>Web Bluetooth indisponible dans ce navigateur.</b><br>
+    Sur iPhone : ouvrir cette page dans <b>Bluefy</b> (App Store) pour le direct,
+    ou enregistrer avec l'app WITMOTION puis importer le fichier dans <b>Résultats</b>.
   </div>
 </section>
 
-<!-- ===================== COUPS ===================== -->
-<section id="viewStrokes" class="hidden">
-  <div class="panel">
+<!-- ===================== 3 · CALIBRAGE ===================== -->
+<section id="viewCalib" class="screen hidden">
+  <h1 class="screen-title">3. Vérification du calibrage</h1>
+  <div class="stepper" data-step="3"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+  </div>
+  <h2 class="hero">Calibrage du capteur</h2>
+  <p class="hero-sub">Placez la queue à l'horizontale et restez immobile.<br>Durée : 3 secondes</p>
+
+  <div class="progress"><i id="calProg"></i></div>
+  <div class="big-num" id="inclNum">—</div>
+  <div class="big-num-sub">Inclinaison</div>
+  <div id="calResult"></div>
+
+  <button class="btn btn-valider" id="btnVerify">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>
+    Vérifier le calibrage
+  </button>
+  <button class="btn btn-secondary" id="btnCal">Calibrer l'axe — limage 2 s</button>
+
+  <div class="card">
+    <div class="section-label">Réglages de détection</div>
     <div class="controls">
-      <label>seuil <input type="range" id="thr" min="0.3" max="4" step="0.1" value="0.8"><span id="thrV">0.8 g</span></label>
-      <label>axe queue
+      <label>Seuil de coup <input type="range" id="thr" min="0.3" max="4" step="0.1" value="0.8"><span id="thrV">0.8 g</span></label>
+      <label>Axe queue
         <select id="axSel"><option value="auto" selected>auto</option><option value="ax">X</option><option value="ay">Y</option><option value="az">Z</option></select>
+        <span id="cueAxLbl" style="color:var(--green-hi)">—</span>
       </label>
-      <button id="btnClear">Effacer</button>
-      <button id="btnJson">Exporter JSON</button>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnCalibGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+</section>
+
+<!-- ===================== 4 · EXERCICES ===================== -->
+<section id="viewExo" class="screen hidden">
+
+  <div id="exoChoose">
+    <h1 class="screen-title">4. Choix des exercices</h1>
+    <div class="stepper" data-step="4"></div>
+    <h2 class="hero" style="font-size:17px;margin-bottom:16px">Sélectionnez un exercice</h2>
+
+    <button class="exo-card" data-exo="points">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="3.2"/><circle cx="8" cy="15.5" r="3.2"/><circle cx="16" cy="15.5" r="3.2"/></svg></span>
+      <span>
+        <h3>Calibrage des coups</h3>
+        <p>Vérifiez la justesse de vos points d'impact sur l'axe vertical.</p>
+        <span class="badges"><span class="badge">10 coups par point</span><span class="badge green">Recommandé</span></span>
+      </span>
+    </button>
+
+    <button class="exo-card" data-exo="speed">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="4"/><circle cx="15" cy="15" r="4"/><path d="M19.5 4.5l1.8-1.8"/></svg></span>
+      <span>
+        <h3>Vitesse du geste</h3>
+        <p>Analysez la vitesse et la régularité de votre geste.</p>
+      </span>
+    </button>
+
+    <button class="exo-card" data-exo="repeat">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21"/></svg></span>
+      <span>
+        <h3>Répétabilité</h3>
+        <p>Mesurez la constance de vos coups dans le temps.</p>
+      </span>
+    </button>
+  </div>
+
+  <div id="exoConfig" class="hidden">
+    <h1 class="screen-title" id="exoCfgTitle">Exercice : Calibrage des coups</h1>
+    <div id="pointBlock">
+      <p class="center" style="font-weight:700;margin-top:10px">Point d'impact<br><span class="muted small" style="font-weight:500">Axe vertical</span></p>
+      <div class="seg" id="segPoint">
+        <button data-p="2">+2</button>
+        <button data-p="1">+1</button>
+        <button data-p="0" class="sel">0</button>
+        <button data-p="-1">-1</button>
+        <button data-p="-2">-2</button>
+      </div>
+    </div>
+    <p class="center" style="font-weight:700;margin-top:20px">Nombre de coups</p>
+    <div class="count-stepper">
+      <button id="cntMinus" aria-label="moins">−</button>
+      <div class="val" id="cntVal">10</div>
+      <button id="cntPlus" aria-label="plus">+</button>
+    </div>
+    <p class="center muted small" id="cntDefault">Par défaut</p>
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" id="btnStart">Démarrer l'exercice</button>
+    <button class="btn btn-secondary" id="btnCfgBack">Retour aux exercices</button>
+
+    <div class="card" id="posCard">
+      <div class="section-label">Position de l'iPhone</div>
+      <div class="table-pos">
+        <!-- proportions réelles : extérieur 383×204 cm, surface de jeu 357×178 cm -->
+        <svg viewBox="0 0 470 204" aria-hidden="true">
+          <rect x="12" y="80" width="20" height="44" rx="4" fill="#242424" stroke="#9BA39E"/>
+          <circle cx="22" cy="102" r="4" fill="#27AE60"/>
+          <line x1="38" y1="102" x2="460" y2="102" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="5 5" opacity=".6"/>
+          <rect x="70" y="0" width="383" height="204" rx="10" fill="#2C2C2C"/>
+          <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
+          <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+          <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+          <circle cx="156" cy="73"  r="2.4" fill="#F1C40F"/>
+          <circle cx="156" cy="102" r="2.4" fill="#8B4513"/>
+          <circle cx="156" cy="131" r="2.4" fill="#27AE60"/>
+          <circle cx="261" cy="102" r="2.4" fill="#2980B9"/>
+          <circle cx="350" cy="102" r="2.4" fill="#E75480"/>
+          <circle cx="415" cy="102" r="2.4" fill="#111111"/>
+        </svg>
+        <p>Dans l'axe de la table, derrière la ligne de fond.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="exoRun" class="hidden">
+    <h1 class="screen-title" id="exoRunTitle">Exercice</h1>
+    <p class="center muted small" id="exoRunSub"></p>
+    <div class="big-num" id="exoCount">0 / 10</div>
+    <div class="big-num-sub">coups détectés</div>
+    <div class="progress"><i id="exoProg"></i></div>
+    <div id="exoDone"></div>
+
+    <div class="panel">
+      <h2>Axe queue <span id="cueAxLbl2" class="accent">—</span> · longitudinal <span style="color:var(--white)">▬</span> · latéral <span class="accent">▬</span> (g)</h2>
+      <canvas id="cCue" class="tall"></canvas>
+      <div class="controls" style="margin-top:10px;justify-content:space-between">
+        <label><input type="checkbox" id="chk3ax"> vue 3 axes</label>
+        <button class="btn btn-secondary compact" id="btnRecord">⏺ Enregistrer CSV</button>
+      </div>
+    </div>
+    <div id="threeAx" class="hidden">
+      <div class="panel">
+        <h2>Accélération (g)</h2>
+        <canvas id="cAcc"></canvas>
+        <div class="legend"><i><span class="dot" style="background:var(--white)"></span>X</i><i><span class="dot" style="background:var(--green-hi)"></span>Y</i><i><span class="dot" style="background:var(--yellow)"></span>Z</i></div>
+      </div>
+      <div class="panel"><h2>Vitesse angulaire (°/s)</h2><canvas id="cGyr"></canvas></div>
+      <div class="panel"><h2>Angles (°)</h2><canvas id="cAng"></canvas>
+        <div class="stats">
+          <div class="cell"><div class="k">Roll</div><div class="v" id="vR">—</div></div>
+          <div class="cell"><div class="k">Pitch</div><div class="v" id="vP">—</div></div>
+          <div class="cell"><div class="k">Yaw</div><div class="v" id="vY">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stats" id="lastStroke"></div>
+    <div style="height:14px"></div>
+    <div class="btn-row">
+      <button class="btn btn-valider" id="btnFinish">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>
+        Terminer
+      </button>
+      <button class="btn btn-annuler" id="btnAbort">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        Annuler
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 5 · RÉSULTATS ===================== -->
+<section id="viewRes" class="screen wide hidden">
+  <h1 class="screen-title">Résultats <span id="nStrokes" class="muted"></span></h1>
+  <p class="center muted small" id="resPlayer" style="margin-bottom:14px"></p>
+
+  <div class="panel">
+    <h2>Session</h2>
+    <div class="controls">
+      <input type="file" id="fileIn" accept=".csv,.txt,.tsv">
+      <label>fréquence si pas de colonne temps
+        <input id="fsIn" type="number" class="inline" value="200" min="1" max="1000"> Hz
+      </label>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn-secondary compact" id="btnDemo" title="Session synthétique pour tester l'interface">Démo</button>
+      <button class="btn btn-secondary compact" id="btnJson">Exporter JSON</button>
+      <button class="btn btn-secondary compact" id="btnCsv" disabled>Exporter CSV</button>
+      <button class="btn btn-annuler compact" id="btnClear">Effacer</button>
     </div>
   </div>
 
@@ -160,10 +310,10 @@ a{color:var(--chalk)}
   <div class="split">
     <div class="panel">
       <h2>Coups détectés</h2>
-      <div id="tblWrap"><div class="empty">Aucun coup. Connecte le capteur, lance la démo, ou importe un enregistrement.</div></div>
+      <div class="table-scroll" id="tblWrap"><div class="empty">Aucun coup. Connectez le capteur et lancez un exercice, importez un enregistrement, ou lancez la démo.</div></div>
     </div>
     <div class="panel">
-      <h2>Détail — accél. queue <span style="color:var(--ivory)">▬</span> · latérale <span style="color:var(--dim)">▬</span> · vitesse <span style="color:var(--chalk)">▬</span></h2>
+      <h2>Détail — accél. queue <span style="color:var(--white)">▬</span> · latérale <span style="color:var(--muted)">▬</span> · vitesse <span class="accent">▬</span></h2>
       <canvas id="cDet" class="tall"></canvas>
       <div class="stats" id="detStats"></div>
     </div>
@@ -180,532 +330,39 @@ a{color:var(--chalk)}
     <div class="legend" id="scatLeg"></div>
   </div>
 </section>
-</div>
 
-<script>
-'use strict';
-/* ============ état ============ */
-const S = {
-  samples: [],          // {t, ax..az (g), gx..gz (°/s), r,p,y (°)}
-  live: false, fs: 200, fsMeasured: 0,
-  strokes: [], sel: -1,
-  device: null, chW: null, recording: [], recordingActive: false,
-  lastTrig: -1e9, pendTrig: -1,
-  overview: null,       // {mag:[], t0, fs} pour session importée
-};
-const $ = id => document.getElementById(id);
-const G = 9.80665;
-const SCORE_CONFIG={
-  lateralPenalty:4, backDeliveryRatio:2, ratioPenalty:20, angularPenalty:12,
-  epsilonDuration:.001, epsilonAverage:.01,
-  straightness:.35, fluidity:.25, stability:.20, regularity:.20 // rectitude prioritaire, poids normalisés = 1,0
-};
-const CSV_HEADERS=['Temps','AccX','AccY','AccZ','GyroX','GyroY','GyroZ','Roll','Pitch','Yaw'];
-const CSV_FIELDS=['timestamp','ax','ay','az','gx','gy','gz','r','p','y'];
-const SVC='0000ffe5-0000-1000-8000-00805f9a34fb',
-      CHN='0000ffe4-0000-1000-8000-00805f9a34fb',
-      CHW='0000ffe9-0000-1000-8000-00805f9a34fb';
+<!-- ===================== ONGLETS ===================== -->
+<nav class="tabbar" aria-label="Navigation principale">
+  <div class="tabbar-inner">
+    <button data-nav="joueur" class="active" aria-label="Joueur">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+      Joueur
+    </button>
+    <button data-nav="conn" aria-label="Connexion">
+      <i class="pipdot" id="connPip"></i>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+      Connexion
+    </button>
+    <button data-nav="calib" aria-label="Calibrage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      Calibrage
+    </button>
+    <button data-nav="exo" aria-label="Exercices">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="3.2"/><circle cx="8" cy="15.5" r="3.2"/><circle cx="16" cy="15.5" r="3.2"/></svg>
+      Exercices
+    </button>
+    <button data-nav="res" aria-label="Résultats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20v-8M12 20V4M19 20v-11"/></svg>
+      Résultats
+    </button>
+  </div>
+</nav>
 
-/* ============ UI de base ============ */
-function setStatus(top, hz){ $('status').innerHTML = top + '<br>' + (hz?hz+' Hz mesurés':'— Hz'); }
-function tab(which){
-  $('viewLive').classList.toggle('hidden', which!=='live');
-  $('viewStrokes').classList.toggle('hidden', which==='live');
-  $('tabLive').classList.toggle('active', which==='live');
-  $('tabStrokes').classList.toggle('active', which!=='live');
-}
-$('tabLive').onclick=()=>tab('live');
-$('tabStrokes').onclick=()=>tab('strokes');
-if(!navigator.bluetooth){ $('noBle').classList.remove('hidden'); $('btnConnect').disabled=true; }
-
-/* ============ canvases ============ */
-function fit(cv){
-  const r = cv.getBoundingClientRect(), d = devicePixelRatio||1;
-  if(cv.width!==Math.round(r.width*d)){ cv.width=Math.round(r.width*d); cv.height=Math.round(r.height*d); }
-  const g = cv.getContext('2d'); g.setTransform(d,0,0,d,0,0); return [g, r.width, r.height];
-}
-const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-
-function plot(cv, series, opts={}){
-  const [g,W,H] = fit(cv);
-  g.clearRect(0,0,W,H);
-  let mn=Infinity, mx=-Infinity;
-  for(const s of series) for(const v of s.data){ if(v<mn)mn=v; if(v>mx)mx=v; }
-  if(!isFinite(mn)){mn=-1;mx=1}
-  if(mx-mn<1e-6){mx+=1;mn-=1}
-  const pad=(mx-mn)*0.08; mn-=pad; mx+=pad;
-  const Y=v=>H-(v-mn)/(mx-mn)*H;
-  // grille + zéro
-  g.strokeStyle=css('--line'); g.lineWidth=1;
-  g.beginPath(); g.moveTo(0,Y(0)+.5); g.lineTo(W,Y(0)+.5); g.stroke();
-  g.fillStyle=css('--dim'); g.font='9px '+css('--mono');
-  g.fillText(mx.toFixed(1),4,10); g.fillText(mn.toFixed(1),4,H-4);
-  const n = series[0].data.length; if(n<2) return {Y,mn,mx,W,H,g};
-  const X=i=>i/(n-1)*W;
-  if(opts.shade) for(const sh of opts.shade){
-    g.fillStyle=sh.color; g.fillRect(X(sh.a),0,X(sh.b)-X(sh.a),H);
-  }
-  for(const s of series){
-    g.strokeStyle=s.color; g.lineWidth=s.w||1.2; g.beginPath();
-    for(let i=0;i<n;i++){ const y=Y(s.data[i]); i?g.lineTo(X(i),y):g.moveTo(X(i),y); }
-    g.stroke();
-  }
-  if(opts.vlines) for(const vl of opts.vlines){
-    g.strokeStyle=vl.color; g.lineWidth=1; g.setLineDash([3,3]);
-    g.beginPath(); g.moveTo(X(vl.i)+.5,0); g.lineTo(X(vl.i)+.5,H); g.stroke(); g.setLineDash([]);
-    if(vl.label){ g.fillStyle=vl.color; g.fillText(vl.label, Math.min(X(vl.i)+4,W-40), 10); }
-  }
-  return {X,Y,W,H,g};
-}
-
-/* ============ rendu direct ============ */
-let rafOn=false;
-function liveCueAxis(win){
-  const sel=$('axSel').value; if(sel!=='auto') return sel;
-  const vars={};
-  for(const k of ['ax','ay','az']){ let m=0;for(const s of win)m+=s[k];m/=win.length;
-    let v=0;for(const s of win)v+=(s[k]-m)**2; vars[k]=v; }
-  const best=Object.keys(vars).sort((a,b)=>vars[b]-vars[a])[0];
-  if(S.liveCue && vars[S.liveCue]*1.5>vars[best]) return S.liveCue; // hystérésis : on ne change pas d'axe pour rien
-  S.liveCue=best; return best;
-}
-function liveLoop(){
-  if(!rafOn) return;
-  const now = S.samples.length?S.samples[S.samples.length-1].t:0;
-  const win = S.samples.filter(s=>s.t>now-4);
-  if(win.length>1){
-    const cue=liveCueAxis(win), off=['ax','ay','az'].filter(a=>a!==cue);
-    $('cueAxLbl').textContent = cue.slice(1).toUpperCase()+($('axSel').value==='auto'?' (auto)':'');
-    const m={}; for(const k of ['ax','ay','az']){let x=0;for(const s of win)x+=s[k];m[k]=x/win.length;}
-    plot($('cCue'),[
-      {data:win.map(s=>Math.hypot(s[off[0]]-m[off[0]], s[off[1]]-m[off[1]])), color:css('--chalk')},
-      {data:win.map(s=>s[cue]-m[cue]), color:css('--ivory'), w:1.4},
-    ]);
-    if($('chk3ax').checked){
-      const c=css('--ivory'), c2=css('--chalk'), c3=css('--amber');
-      plot($('cAcc'),[{data:win.map(s=>s.ax),color:c},{data:win.map(s=>s.ay),color:c2},{data:win.map(s=>s.az),color:c3}]);
-      plot($('cGyr'),[{data:win.map(s=>s.gx),color:c},{data:win.map(s=>s.gy),color:c2},{data:win.map(s=>s.gz),color:c3}]);
-      plot($('cAng'),[{data:win.map(s=>s.r),color:c},{data:win.map(s=>s.p),color:c2},{data:win.map(s=>s.y),color:c3}]);
-      const L=win[win.length-1];
-      $('vR').textContent=L.r.toFixed(1)+'°'; $('vP').textContent=L.p.toFixed(1)+'°'; $('vY').textContent=L.y.toFixed(1)+'°';
-    }
-  }
-  requestAnimationFrame(liveLoop);
-}
-$('chk3ax').onchange=()=>$('threeAx').classList.toggle('hidden',!$('chk3ax').checked);
-$('btnCal').onclick=()=>{
-  if(!S.samples.length){ alert('Connecte le capteur d’abord.'); return; }
-  const start=S.samples.length, btn=$('btnCal');
-  btn.disabled=true; btn.textContent='Limage en cours… allers-retours';
-  setTimeout(()=>{
-    const win=S.samples.slice(start);
-    btn.disabled=false; btn.textContent='Calibrer l’axe — limage 2 s';
-    if(win.length<20){ alert('Pas assez de données pendant la calibration.'); return; }
-    const vars={};
-    for(const k of ['ax','ay','az']){ let m=0;for(const s of win)m+=s[k];m/=win.length;
-      let v=0;for(const s of win)v+=(s[k]-m)**2; vars[k]=v; }
-    const best=Object.keys(vars).sort((a,b)=>vars[b]-vars[a])[0];
-    $('axSel').value=best; S.liveCue=best;
-    $('axSel').onchange();
-    $('cueAxLbl').textContent=best.slice(1).toUpperCase()+' (calibré)';
-  },2500);
-};
-
-/* ============ flux échantillons ============ */
-let rateCount=0, rateT=0;
-function pushSample(s){
-  s.t = performance.now()/1000;
-  S.samples.push(s);
-  if(S.recordingActive) S.recording.push({...s, timestamp: Date.now()});
-  if(S.samples.length > S.fs*40) S.samples = S.samples.slice(-S.fs*30);
-  // mesure de fréquence
-  rateCount++;
-  if(s.t-rateT>=1){ S.fsMeasured=rateCount; rateCount=0; rateT=s.t;
-    setStatus('<span class="rec"></span><b class="on">'+(S.device?.name||'capteur')+'</b>', S.fsMeasured); }
-  // détection live
-  const mag=Math.abs(Math.hypot(s.ax,s.ay,s.az)-1), thr=+$('thr').value;
-  const i=S.samples.length-1, fs=S.fsMeasured||S.fs;
-  if(S.pendTrig<0 && mag>thr && s.t-S.lastTrig>2){ S.pendTrig=i; S.lastTrig=s.t; }
-  if(S.pendTrig>=0 && i-S.pendTrig >= Math.round(0.6*fs)){
-    const a=Math.max(0,S.pendTrig-Math.round(1.5*fs)), b=Math.min(S.samples.length,S.pendTrig+Math.round(0.6*fs));
-    addStroke(S.samples.slice(a,b), fs, s.t);
-    S.pendTrig=-1;
-  }
-}
-
-/* ============ analyse d'un coup ============ */
-function analyze(win, fs){
-  const n=win.length, axes=['ax','ay','az'];
-  const means={}; for(const k of axes){let m=0;for(const w of win)m+=w[k];means[k]=m/n;}
-  let cue=$('axSel').value;
-  if(cue==='auto'){ let bv=-1;
-    for(const k of axes){let v=0;for(const w of win)v+=(w[k]-means[k])**2; if(v>bv){bv=v;cue=k;}} }
-  const off=axes.filter(a=>a!==cue);
-  const mag=win.map(w=>Math.abs(Math.hypot(w.ax,w.ay,w.az)-1));
-  let ip=0; for(let i=1;i<n;i++) if(mag[i]>mag[ip]) ip=i;
-  // vitesse axe queue, détendancée sur le début calme de la fenêtre
-  const q=Math.max(5,Math.floor(n*0.18)); let base=0;
-  for(let i=0;i<q;i++)base+=win[i][cue]; base/=q;
-  const dt=1/fs, vel=new Array(n); let v=0;
-  for(let i=0;i<n;i++){ v+=(win[i][cue]-base)*G*dt; vel[i]=v; }
-  const vImp=vel[ip], dir=Math.sign(vImp)||1, vpk=Math.abs(vImp);
-  const eps=Math.max(0.02,0.08*vpk);
-  let ds=ip; while(ds>0 && Math.sign(vel[ds-1])===dir && Math.abs(vel[ds-1])>eps) ds--;
-  let ps=ds; while(ps>0 && Math.abs(vel[ps-1])<=eps) ps--;
-  let bs=ps; while(bs>0 && Math.sign(vel[bs-1])===-dir && Math.abs(vel[bs-1])>eps*0.5) bs--;
-  const rms=(k,a,b)=>{let m=0,s2=0,c=Math.max(1,b-a);
-    for(let i=a;i<b;i++)m+=win[i][k]; m/=c;
-    for(let i=a;i<b;i++)s2+=(win[i][k]-m)**2; return Math.sqrt(s2/c);};
-  const on=rms(cue,ds,ip+1), lat=Math.hypot(rms(off[0],ds,ip+1),rms(off[1],ds,ip+1));
-  const rng=(k,a,b)=>{let mn=1e9,mx=-1e9;for(let i=a;i<b;i++){const x=win[i][k];if(x<mn)mn=x;if(x>mx)mx=x;}return mx-mn;};
-  const rs=[rng('r',ds,ip+1),rng('p',ds,ip+1),rng('y',ds,ip+1)].sort((a,b)=>a-b);
-  return {
-    cue, ip, ds, ps, bs, vel,
-    magPeak: mag[ip],
-    speed: vpk,
-    back: (ps-bs)*dt, pause: (ds-ps)*dt, deliv: (ip-ds)*dt,
-    latPct: on>1e-6 ? lat/on*100 : 0,
-    angDrift: Math.hypot(rs[0],rs[1]),
-    win, fs
-  };
-}
-function addStroke(win, fs, t){
-  if(win.length<10) return;
-  const a=analyze(win,fs); a.t=t; a.id=S.strokes.length+1;
-  S.strokes.push(a); S.sel=S.strokes.length-1;
-  updateScores();
-  renderStrokes();
-}
-function clampScore(v){ return Math.max(0,Math.min(100,v)); }
-function percentageDeviationFromAverage(value, average){
-  return average<SCORE_CONFIG.epsilonAverage ? 0 : Math.abs(value-average)/average*100;
-}
-function updateScores(){
-  const a=S.strokes, mean=f=>a.reduce((sum,s)=>sum+f(s),0)/a.length;
-  const avgSpeed=mean(s=>s.speed), avgDeliv=mean(s=>s.deliv);
-  a.forEach(s=>{
-    const straight=clampScore(100-s.latPct*SCORE_CONFIG.lateralPenalty);
-    const backDeliveryActual=s.back/Math.max(s.deliv,SCORE_CONFIG.epsilonDuration);
-    const fluid=clampScore(100-Math.abs(backDeliveryActual-SCORE_CONFIG.backDeliveryRatio)*SCORE_CONFIG.ratioPenalty);
-    const stable=clampScore(100-s.angDrift*SCORE_CONFIG.angularPenalty);
-    const technical=SCORE_CONFIG.straightness*straight+SCORE_CONFIG.fluidity*fluid+
-      SCORE_CONFIG.stability*stable;
-    if(a.length<2){ s.score=Math.round(technical/(1-SCORE_CONFIG.regularity)); return; }
-    const speedDeviation=percentageDeviationFromAverage(s.speed,avgSpeed);
-    const deliveryDeviation=percentageDeviationFromAverage(s.deliv,avgDeliv);
-    const regular=
-      (clampScore(100-speedDeviation)+clampScore(100-deliveryDeviation))/2;
-    s.score=Math.round(technical+SCORE_CONFIG.regularity*regular);
-  });
-}
-
-/* ============ rendu coups ============ */
-function fmt(x,d=2){return isFinite(x)?x.toFixed(d):'—'}
-function renderStrokes(){
-  $('nStrokes').textContent = S.strokes.length?('· '+S.strokes.length):'';
-  const w=$('tblWrap');
-  if(!S.strokes.length){ w.innerHTML='<div class="empty">Aucun coup. Connecte le capteur, lance la démo, ou importe un enregistrement.</div>';
-    $('detStats').innerHTML=''; $('sumStats').innerHTML='<div class="empty" style="grid-column:1/-1">—</div>';
-    fit($('cDet'))[0].clearRect(0,0,9999,9999); return; }
-  let h='<table><tr><th>#</th><th>score<br>/100</th><th>vitesse<br>m/s</th><th>pic<br>g</th><th>backswing<br>ms</th><th>pause<br>ms</th><th>délivr.<br>ms</th><th>dév.lat.<br>%</th><th>dist.<br>cm</th></tr>';
-  S.strokes.forEach((s,i)=>{
-    h+=`<tr class="${i===S.sel?'sel':''}" data-i="${i}"><td>${s.id}</td><td>${s.score}</td><td>${fmt(s.speed)}</td><td>${fmt(s.magPeak,1)}</td><td>${Math.round(s.back*1000)}</td><td>${Math.round(s.pause*1000)}</td><td>${Math.round(s.deliv*1000)}</td><td>${fmt(s.latPct,0)}</td><td><input class="distIn" type="number" inputmode="decimal" data-d="${i}" value="${s.dist??''}" placeholder="—"></td></tr>`;
-  });
-  w.innerHTML=h+'</table>';
-  w.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{S.sel=+tr.dataset.i;renderStrokes();});
-  w.querySelectorAll('.distIn').forEach(inp=>{
-    inp.onclick=e=>e.stopPropagation();
-    inp.onchange=()=>{ const v=parseFloat(inp.value); S.strokes[+inp.dataset.d].dist=isFinite(v)&&v>0?v:undefined; renderSummary(); drawScatter(); };
-  });
-  renderDetail(); renderSummary(); drawScatter();
-}
-function renderDetail(){
-  const s=S.strokes[S.sel]; if(!s) return;
-  const cueD=s.win.map(w=>w[s.cue]);
-  const m={ax:0,ay:0,az:0}; // moyenne pour recentrer l'affichage
-  for(const k in m){let x=0;for(const w of s.win)x+=w[k];m[k]=x/s.win.length;}
-  const off=['ax','ay','az'].filter(a=>a!==s.cue);
-  const latD=s.win.map(w=>Math.hypot(w[off[0]]-m[off[0]],w[off[1]]-m[off[1]]));
-  const vmax=Math.max(...s.vel.map(Math.abs))||1;
-  const amax=Math.max(...cueD.map(x=>Math.abs(x-m[s.cue])))||1;
-  const velScaled=s.vel.map(v=>v/vmax*amax); // vitesse remise à l'échelle de l'accél pour superposition
-  plot($('cDet'),[
-    {data:latD, color:css('--dim')},
-    {data:cueD.map(x=>x-m[s.cue]), color:css('--ivory'), w:1.4},
-    {data:velScaled, color:css('--chalk'), w:1.4},
-  ],{
-    shade:[
-      {a:s.bs,b:s.ps,color:'rgba(217,164,65,.10)'},
-      {a:s.ps,b:s.ds,color:'rgba(127,160,143,.08)'},
-      {a:s.ds,b:s.ip,color:'rgba(87,184,201,.12)'},
-    ],
-    vlines:[{i:s.ip,color:css('--red'),label:'impact'}]
-  });
-  $('detStats').innerHTML =
-    st('vitesse impact', fmt(s.speed)+' m/s')+
-    st('pic accél', fmt(s.magPeak,1)+' g')+
-    st('tempo B·P·D', Math.round(s.back*1000)+'·'+Math.round(s.pause*1000)+'·'+Math.round(s.deliv*1000)+' ms')+
-    st('ratio back/délivr.', fmt(s.deliv>0?s.back/s.deliv:NaN,1))+
-    st('déviation latérale', fmt(s.latPct,0)+' %')+
-    st('dérive angulaire', fmt(s.angDrift,1)+' °')+
-    st('axe queue', s.cue.slice(1).toUpperCase()+($('axSel').value==='auto'?' (auto)':''));
-}
-function st(k,v){return `<div class="cell"><div class="k">${k}</div><div class="v">${v}</div></div>`}
-function renderSummary(){
-  const a=S.strokes; if(!a.length) return;
-  const col=f=>a.map(f).filter(isFinite);
-  const mu=x=>x.reduce((p,c)=>p+c,0)/x.length;
-  const sd=x=>{const m=mu(x);return Math.sqrt(mu(x.map(v=>(v-m)**2)))};
-  const ms=(f,d=2,u='')=>{const x=col(f);return fmt(mu(x),d)+' ± '+fmt(sd(x),d)+u};
-  const cv=f=>{const x=col(f);const m=mu(x);return m?fmt(sd(x)/m*100,1)+' %':'—'};
-  let h =
-    st('coups', a.length)+
-    st('score CueSense', ms(s=>s.score,0,' /100'))+
-    st('vitesse', ms(s=>s.speed,2,' m/s'))+
-    st('CV vitesse', cv(s=>s.speed))+
-    st('ratio back/délivr.', ms(s=>s.deliv>0?s.back/s.deliv:NaN,1))+
-    st('pause', ms(s=>s.pause*1000,0,' ms'))+
-    st('dév. latérale', ms(s=>s.latPct,0,' %'))+
-    st('dérive angulaire', ms(s=>s.angDrift,1,' °'));
-  const dists=a.filter(s=>isFinite(s.dist));
-  if(dists.length>=3){
-    h += st('distance', ms(s=>s.dist,0,' cm'))+st('CV distance', cv(s=>s.dist));
-    const x=dists.map(s=>s.speed**2), y=dists.map(s=>s.dist);
-    const mx=mu(x),my=mu(y);
-    let sxy=0,sx=0,sy=0;
-    for(let i=0;i<x.length;i++){sxy+=(x[i]-mx)*(y[i]-my);sx+=(x[i]-mx)**2;sy+=(y[i]-my)**2;}
-    const r=(sx&&sy)?sxy/Math.sqrt(sx*sy):NaN;
-    h += st('corr v² ↔ dist', fmt(r,2));
-  }
-  $('sumStats').innerHTML = h;
-}
-function drawScatter(){
-  const pts=S.strokes.filter(s=>isFinite(s.dist)&&s.dist>0);
-  const P=$('scatterP');
-  if(pts.length<3){ P.classList.add('hidden'); return; }
-  P.classList.remove('hidden');
-  const cv=$('cScat'), [g,W,H]=fit(cv);
-  g.clearRect(0,0,W,H);
-  const xs=pts.map(p=>p.speed), ys=pts.map(p=>p.dist);
-  let xmn=Math.min(...xs),xmx=Math.max(...xs),ymn=Math.min(...ys),ymx=Math.max(...ys);
-  const px=(xmx-xmn)||xmx*.2||1, py=(ymx-ymn)||ymx*.2||1;
-  xmn-=px*.2;xmx+=px*.2;ymn-=py*.2;ymx+=py*.2; if(ymn<0)ymn=0;
-  const ML=40,MB=20,MT=8,MR=8;
-  const X=v=>ML+(v-xmn)/(xmx-xmn)*(W-ML-MR), Y=v=>H-MB-(v-ymn)/(ymx-ymn)*(H-MT-MB);
-  g.strokeStyle=css('--line');g.lineWidth=1;
-  g.beginPath();g.moveTo(ML+.5,MT);g.lineTo(ML+.5,H-MB+.5);g.lineTo(W-MR,H-MB+.5);g.stroke();
-  g.fillStyle=css('--dim');g.font='9px '+css('--mono');
-  g.fillText(fmt(ymx,0)+' cm',2,MT+8); g.fillText(fmt(ymn,0),2,H-MB);
-  g.fillText(fmt(xmn,2),ML,H-6); g.fillText(fmt(xmx,2)+' m/s',W-MR-52,H-6);
-  // ajustement d ≈ k·v² (moindres carrés par l'origine)
-  let n1=0,n2=0; for(const p of pts){n1+=p.dist*p.speed**2;n2+=p.speed**4;}
-  const k=n2?n1/n2:0;
-  if(k>0){ g.strokeStyle=css('--dim');g.setLineDash([3,3]);g.beginPath();
-    for(let i=0;i<=40;i++){const vx=xmn+(xmx-xmn)*i/40, vy=k*vx*vx;
-      if(vy<ymn||vy>ymx){if(i===0)continue;}
-      const cx=X(vx),cy=Y(Math.min(Math.max(vy,ymn),ymx));
-      i===0?g.moveTo(cx,cy):g.lineTo(cx,cy);}
-    g.stroke();g.setLineDash([]); }
-  for(const p of pts){
-    g.fillStyle=css('--chalk');
-    g.beginPath();g.arc(X(p.speed),Y(p.dist),3.5,0,7);g.fill();
-    g.fillStyle=css('--dim');g.fillText('#'+p.id,X(p.speed)+6,Y(p.dist)+3);
-  }
-  $('scatLeg').textContent='n='+pts.length+' · ajustement d ≈ '+fmt(k,1)+'·v² (pointillés) — les points loin de la courbe = contact irrégulier';
-}
-$('thr').oninput=()=>{$('thrV').textContent=$('thr').value+' g'};
-$('axSel').onchange=()=>{ S.strokes=S.strokes.map(s=>{const r=analyze(s.win,s.fs);r.t=s.t;r.id=s.id;r.dist=s.dist;return r;}); updateScores(); renderStrokes(); };
-$('btnClear').onclick=()=>{S.strokes=[];S.sel=-1;S.overview=null;$('overviewP').classList.add('hidden');$('scatterP').classList.add('hidden');renderStrokes();};
-$('btnJson').onclick=()=>{
-  const out=S.strokes.map(s=>({id:s.id,score:s.score,speed_ms:+fmt(s.speed),peak_g:+fmt(s.magPeak,1),
-    back_ms:Math.round(s.back*1000),pause_ms:Math.round(s.pause*1000),deliv_ms:Math.round(s.deliv*1000),
-    lateral_pct:+fmt(s.latPct,0),angular_deg:+fmt(s.angDrift,1),axis:s.cue,dist_cm:s.dist??null}));
-  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='cue-scope-coups.json';a.click();
-};
-
-/* ============ BLE ============ */
-let bleBuf=new Uint8Array(0);
-function onNotify(e){
-  const v=new Uint8Array(e.target.value.buffer,e.target.value.byteOffset,e.target.value.byteLength);
-  const b=new Uint8Array(bleBuf.length+v.length); b.set(bleBuf); b.set(v,bleBuf.length);
-  let i=0;
-  while(i+20<=b.length){
-    if(b[i]===0x55 && b[i+1]===0x61){
-      const dv=new DataView(b.buffer,i+2,18), g=k=>dv.getInt16(k,true);
-      pushSample({ax:g(0)/32768*16, ay:g(2)/32768*16, az:g(4)/32768*16,
-                  gx:g(6)/32768*2000, gy:g(8)/32768*2000, gz:g(10)/32768*2000,
-                  r:g(12)/32768*180, p:g(14)/32768*180, y:g(16)/32768*180});
-      i+=20;
-    } else i++;
-  }
-  bleBuf=b.slice(i);
-}
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function writeCmd(bytes){ try{ await S.chW.writeValue(new Uint8Array(bytes)); }catch(e){ console.warn('write',e); } await sleep(120); }
-$('btnConnect').onclick=async()=>{
-  try{
-    let dev;
-    try{ dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'WT'},{namePrefix:'BWT'},{namePrefix:'HC'}],optionalServices:[SVC]}); }
-    catch(e){ if(e.name==='NotFoundError'&&!e.message.includes('cancel')) dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[SVC]}); else throw e; }
-    S.device=dev;
-    dev.addEventListener('gattserverdisconnected',()=>{
-      setStatus('<b>déconnecté</b>');
-      rafOn=false;
-      $('btnDisc').disabled=true;
-      if(S.recordingActive) setRecording(false);
-    });
-    const srv=await dev.gatt.connect();
-    const svc=await srv.getPrimaryService(SVC);
-    const chN=await svc.getCharacteristic(CHN);
-    S.chW=await svc.getCharacteristic(CHW);
-    await chN.startNotifications();
-    chN.addEventListener('characteristicvaluechanged', onNotify);
-    // déverrouille, règle la fréquence, sauvegarde
-    await writeCmd([0xFF,0xAA,0x69,0x88,0xB5]);
-    await writeCmd([0xFF,0xAA,0x03,parseInt($('selRate').value,16),0x00]);
-    await writeCmd([0xFF,0xAA,0x00,0x00,0x00]);
-    setStatus('<span class="rec"></span><b class="on">'+(dev.name||'capteur')+'</b>');
-    $('btnDisc').disabled=false; rafOn=true; requestAnimationFrame(liveLoop); tab('live');
-    if(navigator.wakeLock) navigator.wakeLock.request('screen').catch(()=>{});
-  }catch(e){ if(e.name!=='NotFoundError') setStatus('<b style="color:var(--red)">erreur : '+e.message+'</b>'); }
-};
-$('btnDisc').onclick=()=>{ S.device?.gatt?.disconnect(); };
-function setRecording(active){
-  S.recordingActive=active;
-  $('btnRecord').textContent=active?'Arrêter l’enregistrement':'Enregistrer';
-  $('btnCsv').disabled=active||!S.recording.length;
-}
-$('btnRecord').onclick=()=>{
-  if(!S.recordingActive && !S.device?.gatt?.connected){ alert('Veuillez connecter le capteur avant d’enregistrer.'); return; }
-  if(!S.recordingActive) S.recording=[];
-  setRecording(!S.recordingActive);
-};
-$('btnCsv').onclick=()=>{
-  const delimiter=';';
-  const rows=[CSV_HEADERS.join(delimiter)];
-  S.recording.forEach(s=>rows.push(CSV_FIELDS.map(k=>s[k]).join(delimiter)));
-  const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
-  const a=document.createElement('a'); a.href=url; a.download='cuesense-session.csv'; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-};
-$('selRate').onchange=async()=>{ if(S.chW && S.device?.gatt?.connected){
-  await writeCmd([0xFF,0xAA,0x69,0x88,0xB5]);
-  await writeCmd([0xFF,0xAA,0x03,parseInt($('selRate').value,16),0x00]);
-  await writeCmd([0xFF,0xAA,0x00,0x00,0x00]); } };
-
-/* ============ import fichier (export app WITMOTION) ============ */
-$('fileIn').onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{ try{ importText(rd.result); }catch(err){ alert('Import impossible : '+err.message); } };
-  rd.readAsText(f);
-};
-function importText(txt){
-  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
-  if(lines.length<10) throw new Error('fichier trop court');
-  const delim=[['\t',(lines[1].match(/\t/g)||[]).length],[',',(lines[1].match(/,/g)||[]).length],[';',(lines[1].match(/;/g)||[]).length]].sort((a,b)=>b[1]-a[1])[0][0];
-  const hasHeader=/[a-zà-ÿ]/i.test(lines[0].replace(/[\d\s.:\-+eE,;\t]/g,'')||'') || /[a-z]{2,}/i.test(lines[0]);
-  let cols={}, start=0;
-  if(hasHeader){
-    start=1;
-    const hs=lines[0].split(delim).map(h=>h.toLowerCase().replace(/[^a-z0-9]/g,''));
-    hs.forEach((h,i)=>{
-      const axis=/z(?!.*[xy])/.test(h)?'z':/y(?!.*[xz])/.test(h)?'y':/x(?!.*[yz])/.test(h)?'x':null;
-      if(/time|temps|chip/.test(h)) cols.t=i;
-      else if(/angle|roll|pitch|yaw/.test(h)){
-        if(/roll/.test(h))cols.r=i; else if(/pitch/.test(h))cols.p=i; else if(/yaw/.test(h))cols.y=i;
-        else if(axis)cols[{x:'r',y:'p',z:'y'}[axis]]=i;
-      }
-      else if(/^(w|as|gyro|angular)/.test(h)||/degs|dps/.test(h)){ if(axis)cols['g'+axis]=i; }
-      else if(/^(a|acc)/.test(h)||/\bg\b/.test(h)){ if(axis)cols['a'+axis]=i; }
-    });
-  }
-  if(cols.ax===undefined){ // pas d'entêtes exploitables : ordre WitMotion par défaut
-    const nc=lines[start].split(delim).length;
-    const o = nc>=10 ? 1 : 0; if(nc>=10) cols.t=0;
-    ['ax','ay','az','gx','gy','gz','r','p','y'].forEach((k,i)=>cols[k]=i+o);
-  }
-  const parseT=v=>{
-    if(/:/.test(v)){ const m=v.trim().split(/\s+/).pop().split(':');
-      return (+m[0])*3600+(+m[1])*60+parseFloat(m[2]); }
-    const x=parseFloat(v); return x>1e10?x/1000:x; // ms epoch → s
-  };
-  const raw=[];
-  for(let i=start;i<lines.length;i++){
-    const c=lines[i].split(delim); if(c.length<3) continue;
-    const s={};
-    for(const k of ['ax','ay','az','gx','gy','gz','r','p','y']) s[k]=cols[k]!==undefined?parseFloat(c[cols[k]])||0:0;
-    if(cols.t!==undefined) s.t=parseT(c[cols.t]);
-    raw.push(s);
-  }
-  if(raw.length<20) throw new Error('pas assez d’échantillons lisibles');
-  let fs;
-  if(cols.t!==undefined && isFinite(raw[0].t) && raw[raw.length-1].t>raw[0].t)
-    fs=(raw.length-1)/(raw[raw.length-1].t-raw[0].t);
-  else fs=+$('fsIn').value||200;
-  // détection hors-ligne
-  S.strokes=[]; S.sel=-1;
-  const thr=+$('thr').value, refr=Math.round(2*fs), pre=Math.round(1.5*fs), post=Math.round(0.6*fs);
-  const mag=raw.map(w=>Math.abs(Math.hypot(w.ax,w.ay,w.az)-1));
-  let last=-refr;
-  for(let i=0;i<raw.length;i++){
-    if(mag[i]>thr && i-last>refr){
-      addStroke(raw.slice(Math.max(0,i-pre),Math.min(raw.length,i+post)), fs, i/fs);
-      last=i;
-    }
-  }
-  S.overview={mag, fs, marks:S.strokes.map(s=>Math.round(s.t*fs))};
-  $('overviewP').classList.remove('hidden');
-  drawOverview();
-  tab('strokes');
-  if(!S.strokes.length) alert('Aucun coup au-dessus du seuil ('+thr+' g) — baisse le seuil puis réimporte.');
-}
-function drawOverview(){
-  if(!S.overview) return;
-  const {mag,marks}=S.overview;
-  const step=Math.max(1,Math.floor(mag.length/1200));
-  const ds=[]; for(let i=0;i<mag.length;i+=step){let m=0;for(let j=i;j<Math.min(i+step,mag.length);j++)m=Math.max(m,mag[j]);ds.push(m);}
-  const p=plot($('cOver'),[{data:ds,color:css('--dim')}],
-    {vlines:marks.map(m=>({i:m/step,color:css('--red')}))});
-  $('cOver').onclick=ev=>{
-    const r=$('cOver').getBoundingClientRect(), x=(ev.clientX-r.left)/r.width;
-    const idx=x*mag.length; let best=0,bd=1e18;
-    S.overview.marks.forEach((m,i)=>{const d=Math.abs(m-idx);if(d<bd){bd=d;best=i;}});
-    S.sel=best; renderStrokes();
-  };
-}
-
-/* ============ démo synthétique ============ */
-$('btnDemo').onclick=()=>{
-  const fs=200, raw=[], N=fs*24, rnd=()=>(Math.random()-.5);
-  let r=0.3,p=-1.2,y=45;
-  const strokesAt=[3,7.5,12,16.5,21];
-  for(let i=0;i<N;i++){
-    const t=i/fs; let ax=0, ay=0, az=1;
-    for(const st of strokesAt){
-      const d=t-st, k=1+0.15*rnd();
-      if(d>-0.8&&d<-0.35) ax+=-0.25*k*Math.sin((d+0.8)/0.45*Math.PI);         // backswing
-      if(d>-0.15&&d<0)    ax+= 1.8*k*Math.sin((d+0.15)/0.15*Math.PI);          // délivrance
-      if(d>=0&&d<0.08)    { ax+= (2.5+k)*Math.exp(-d*90)*Math.cos(d*260);       // impact + ringing
-                            ay+= 0.35*k*Math.exp(-d*80)*Math.sin(d*300); }
-      if(d>-0.15&&d<0)    ay+= 0.06*k*rnd()*4;                                  // bruit latéral pendant délivrance
-    }
-    ax+=0.012*rnd(); ay+=0.012*rnd(); az+=0.012*rnd();
-    r+=0.02*rnd(); p+=0.02*rnd(); y+=0.03*rnd();
-    raw.push({t,ax,ay,az,gx:60*ax+5*rnd(),gy:8*rnd(),gz:6*rnd(),r,p,y});
-  }
-  S.strokes=[];S.sel=-1;
-  const thr=+$('thr').value, refr=2*fs;
-  const mag=raw.map(w=>Math.abs(Math.hypot(w.ax,w.ay,w.az)-1));
-  let last=-refr;
-  for(let i=0;i<raw.length;i++) if(mag[i]>thr&&i-last>refr){
-    addStroke(raw.slice(Math.max(0,i-1.5*fs|0),Math.min(raw.length,i+0.6*fs|0)),fs,i/fs); last=i; }
-  S.overview={mag,fs,marks:S.strokes.map(s=>Math.round(s.t*fs))};
-  $('overviewP').classList.remove('hidden'); drawOverview(); tab('strokes');
-};
-
-addEventListener('resize',()=>{ if(S.strokes.length){drawOverview();renderDetail();drawScatter();} });
-</script>
+<script src="state.js"></script>
+<script src="charts.js"></script>
+<script src="analysis.js"></script>
+<script src="sensor.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

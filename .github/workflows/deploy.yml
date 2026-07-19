@@ -17,6 +17,7 @@ jobs:
           mkdir deploy
           git ls-files --cached --others --exclude-standard \
             | grep -v '^\.github/' \
+            | grep -v '^\.claude/' \
             | grep -v '\.md$' \
             | tar cf - -T - \
             | tar xf - -C deploy

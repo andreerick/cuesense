@@ -1,14 +1,21 @@
-# CueSense — Cue//Scope
+# CueSense
 
 Une application web d'une seule page qui transforme un **capteur de mouvement WitMotion
 Bluetooth** fixé sur une queue de snooker/billard en **analyseur de gestuelle**. Elle lit
 en direct le flux du capteur via Web Bluetooth, détecte chaque coup et mesure la mécanique
 et la régularité de la délivrance — vitesse, tempo, rectitude et répétabilité.
 
-Toute l'application tient dans un unique [`index.html`](index.html) : HTML/CSS/JS pur, sans
-étape de build, sans dépendances, sans backend. L'interface est en français.
+L'application est en HTML/CSS/JS pur — quelques fichiers statiques à plat, sans étape de
+build, sans dépendances, sans backend. [`index.html`](index.html) charge une feuille de
+style et cinq petits scripts classiques (pas de modules ES), donc elle fonctionne aussi
+ouverte directement en `file://`. L'interface est en français.
 
-> **Cue//Scope** · `WitMotion BLE · Snooker`
+L'interface suit l'architecture validée dans [`PROJECT.md`](PROJECT.md) : cinq onglets —
+**Joueur** (identification), **Connexion** (capteur + batterie), **Calibrage**
+(vérification 3 s de l'horizontale + axe de la queue), **Exercices** (calibrage des coups
++2…−2, vitesse du geste, répétabilité) et **Résultats** (tableaux, graphiques, exports).
+
+> **CueSense** · `Analyse du geste au snooker` · `WitMotion BLE`
 
 ## Ce que ça fait
 
@@ -58,7 +65,7 @@ ressortir les points aberrants (mauvais contacts, contacts irréguliers).
    utilisés s'il n'y a pas de colonne temps.
 4. **Démo** — une session synthétique, pratique pour explorer l'interface sans matériel.
 
-Les résultats peuvent être exportés en **JSON** (`cue-scope-coups.json`). Chaque coup reçoit
+Les résultats peuvent être exportés en **JSON** (`cuesense-coups.json`). Chaque coup reçoit
 aussi un **score CueSense sur 100**, fondé sur sa rectitude, sa fluidité, sa stabilité
 angulaire et sa régularité par rapport à la séance.
 
@@ -76,7 +83,7 @@ iOS/macOS.
 
 ## Lancer en local
 
-C'est un simple fichier statique — il suffit de l'ouvrir :
+Ce sont de simples fichiers statiques — il suffit d'ouvrir la page :
 
 ```bash
 git clone https://github.com/YohannParis/cuesense.git
@@ -94,15 +101,18 @@ python3 -m http.server 8000
 
 ## Déploiement
 
-`index.html` est déployé sur **https://yohann.paris** automatiquement via GitHub Actions.
+L'application est déployée sur **https://yohann.paris** automatiquement via GitHub Actions.
 
 ### Déploiement automatique
 
-Le workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) s'exécute à chaque
-push sur `main` qui modifie `index.html` (et peut être lancé manuellement depuis l'onglet
-**Actions**). Il envoie le fichier sur le serveur en **SFTP** via
+Le workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) s'exécute à
+chaque push sur `main` (et peut être lancé manuellement depuis l'onglet **Actions**). Il
+rassemble les fichiers du site (tout sauf `.github/`, `.claude/` et les `.md`) puis les
+envoie sur le serveur en **SFTP** via
 [`wlixcc/SFTP-Deploy-Action`](https://github.com/wlixcc/SFTP-Deploy-Action), dans le dossier
-du site configuré par les secrets ci-dessous.
+du site configuré par les secrets ci-dessous. Les fichiers de l'app restent volontairement
+**à plat** (pas de sous-dossiers) : l'utilisateur de déploiement est chrooté et l'action ne
+crée pas de répertoires distants.
 
 `sftp_only: true` est indispensable — l'utilisateur de déploiement est restreint au SFTP
 (voir ci-dessous), l'action ne doit donc pas ouvrir de shell SSH.
@@ -146,7 +156,15 @@ que dans le dossier du site. Le principe :
 
 ```
 cuesense/
-├── index.html                    # toute l'application
+├── index.html                    # structure des cinq écrans + barre d'onglets
+├── cuesense.css                  # charte graphique CueSense (voir PROJECT.md)
+├── state.js                      # état partagé, constantes, utilitaires
+├── charts.js                     # tracés canvas
+├── analysis.js                   # analyse des coups + score CueSense
+├── sensor.js                     # Web Bluetooth WitMotion + batterie
+├── data.js                       # import CSV, exports, démo
+├── app.js                        # navigation, écrans, exercices, résultats
+├── PROJECT.md                    # architecture validée + maquettes
 ├── README.md
 └── .github/workflows/deploy.yml  # déploiement SFTP automatique
 ```
