@@ -69,6 +69,11 @@ Les résultats peuvent être exportés en **JSON** (`cuesense-coups.json`). Chaq
 aussi un **score CueSense sur 100**, fondé sur sa rectitude, sa fluidité, sa stabilité
 angulaire et sa régularité par rapport à la séance.
 
+La séance en cours (coups, réglages, exercice) est **sauvegardée localement** dans le
+navigateur (`localStorage`) : elle survit à un rafraîchissement et à la fermeture de
+l'onglet, et se restaure automatiquement à l'ouverture. Le bouton **Effacer** repart d'une
+séance vierge. Rien ne quitte l'appareil — il n'y a pas de serveur.
+
 ## Compatibilité des navigateurs
 
 Web Bluetooth est requis pour le capteur en direct et n'est disponible que dans

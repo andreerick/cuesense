@@ -12,6 +12,7 @@ function nav(key){
   if (key === 'res') renderStrokes();
   if (key === 'exo' && S.exo.active) showExoScreen('run');
   scrollTo(0, 0);
+  schedulePersist();
 }
 document.querySelectorAll('.tabbar button').forEach(b => b.onclick = () => nav(b.dataset.nav));
 
@@ -61,6 +62,62 @@ $('btnPlayerReset').onclick = () => {
   renderSteppers(); $('playerName').focus();
 };
 
+/* ============ session locale (survit au rafraîchissement et à la fermeture) ============ */
+const SESSION_KEY = 'cuesense-session';
+let persistT = null;
+function saveSession(){
+  // pas de coups = pas de session : on efface le stockage (bouton « Effacer »)
+  if (!S.strokes.length){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} return; }
+  let data = {
+    v: 1,
+    strokes: S.strokes,
+    sel: S.sel,
+    overview: S.overview,
+    exo: { ...S.exo, active: false },
+    liveCue: S.liveCue,
+    settings: { thr: $('thr').value, axis: $('axSel').value, fsIn: $('fsIn').value, rate: $('selRate').value },
+    view: S.view,
+  };
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  } catch (e) {
+    // quota dépassé (gros import) : on sacrifie l'aperçu, le plus gros tableau, puis on réessaie
+    try {
+      data = { ...data, overview: null };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    } catch (e2) { console.warn('Session non sauvegardée (quota localStorage dépassé).', e2); }
+  }
+}
+function schedulePersist(){ clearTimeout(persistT); persistT = setTimeout(saveSession, 400); }
+function loadSession(){
+  let data;
+  try { data = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+  catch (e){ return false; }
+  if (!data || !Array.isArray(data.strokes) || !data.strokes.length) return false;
+  S.strokes = data.strokes;
+  S.sel = Number.isInteger(data.sel) && data.sel < S.strokes.length ? data.sel : S.strokes.length - 1;
+  S.overview = (data.overview && data.overview.mag && data.overview.mag.length) ? data.overview : null;
+  S.liveCue = data.liveCue || null;
+  if (data.exo) S.exo = Object.assign(S.exo, data.exo, { active: false });
+  if (S.strokes.some(s => s.exo)) S.flow.exo = true;
+  const set = data.settings || {};
+  if (set.thr){ $('thr').value = set.thr; $('thrV').textContent = set.thr + ' g'; }
+  if (set.axis) $('axSel').value = set.axis;
+  if (set.fsIn) $('fsIn').value = set.fsIn;
+  if (set.rate) $('selRate').value = set.rate;
+  setTarget(S.exo.target || 10);
+  setAxisLabel($('axSel').value === 'auto'
+    ? (S.liveCue ? S.liveCue.slice(1).toUpperCase() + ' (auto)' : '—')
+    : $('axSel').value.slice(1).toUpperCase());
+  updateScores();
+  if (S.overview) $('overviewP').classList.remove('hidden');
+  nav(data.view && VIEWS[data.view] ? data.view : 'res');
+  return true;
+}
+// filet de sécurité : sauvegarde immédiate quand l'onglet passe en arrière-plan / se ferme
+addEventListener('pagehide', saveSession);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveSession(); });
+
 /* ============ connexion ============ */
 function renderConn(){
   const live = S.live && S.device?.gatt?.connected;
@@ -101,7 +158,8 @@ function renderConn(){
 $('btnConnect').onclick = connectSensor;
 $('btnDisc').onclick = () => { S.device?.gatt?.disconnect(); };
 $('btnConnGo').onclick = () => { S.flow.conn = true; nav('calib'); };
-$('selRate').onchange = async () => { if (S.chW && S.device?.gatt?.connected) await applyRate(); };
+$('selRate').onchange = async () => { schedulePersist(); if (S.chW && S.device?.gatt?.connected) await applyRate(); };
+$('fsIn').onchange = schedulePersist;
 if (!navigator.bluetooth){ $('noBle').classList.remove('hidden'); $('btnConnect').disabled = true; }
 
 /* ============ calibrage ============ */
@@ -182,7 +240,7 @@ $('btnCal').onclick = () => {
   }, 2500);
 };
 function setAxisLabel(txt){ $('cueAxLbl').textContent = txt; $('cueAxLbl2').textContent = txt; }
-$('thr').oninput = () => { $('thrV').textContent = $('thr').value + ' g'; };
+$('thr').oninput = () => { $('thrV').textContent = $('thr').value + ' g'; schedulePersist(); };
 $('axSel').onchange = () => {
   S.strokes = S.strokes.map(s => { const r = analyze(s.win, s.fs); r.t = s.t; r.id = s.id; r.dist = s.dist; r.exo = s.exo; return r; });
   updateScores(); renderStrokes();
@@ -227,6 +285,7 @@ $('btnStart').onclick = () => {
   $('exoRunTitle').textContent = 'Exercice : ' + EXOS[S.exo.type].name;
   updateRunSub(); updateRun();
   showExoScreen('run');
+  schedulePersist();
 };
 function updateRunSub(){
   $('exoRunSub').textContent = S.exo.type === 'points'
@@ -264,12 +323,12 @@ function finishSeries(){
     ${next !== null ? `<button class="btn btn-primary" id="btnNextPt">Point suivant (${fmtPoint(+next)})</button>` : ''}
     ${S.exo.type === 'points' && next === null ? `<div class="center muted small" style="margin-bottom:12px">Exercice complet — les 5 points sont calibrés !</div>` : ''}
     <button class="btn btn-valider" id="btnSeeRes">Voir les résultats</button>`;
-  renderSteppers(); renderSeg();
+  renderSteppers(); renderSeg(); schedulePersist();
   const np = $('btnNextPt');
   if (np) np.onclick = () => {
     S.exo.point = +next; renderSeg(); updateRunSub();
     S.exo.count = 0; S.exo.active = true;
-    $('exoDone').innerHTML = ''; updateRun();
+    $('exoDone').innerHTML = ''; updateRun(); schedulePersist();
   };
   $('btnSeeRes').onclick = () => nav('res');
 }
@@ -326,6 +385,7 @@ $('chk3ax').onchange = () => $('threeAx').classList.toggle('hidden', !$('chk3ax'
 function st(k, v){ return `<div class="cell"><div class="k">${k}</div><div class="v">${v}</div></div>`; }
 
 function renderStrokes(){
+  schedulePersist();
   $('nStrokes').textContent = S.strokes.length ? '· ' + S.strokes.length : '';
   $('resPlayer').textContent = S.player.name ? S.player.name + ' · ' + S.player.level : '';
   const w = $('tblWrap');
@@ -347,7 +407,7 @@ function renderStrokes(){
   w.querySelectorAll('tr[data-i]').forEach(tr => tr.onclick = () => { S.sel = +tr.dataset.i; renderStrokes(); });
   w.querySelectorAll('.distIn').forEach(inp => {
     inp.onclick = e => e.stopPropagation();
-    inp.onchange = () => { const v = parseFloat(inp.value); S.strokes[+inp.dataset.d].dist = isFinite(v) && v > 0 ? v : undefined; renderSummary(); drawScatter(); };
+    inp.onchange = () => { const v = parseFloat(inp.value); S.strokes[+inp.dataset.d].dist = isFinite(v) && v > 0 ? v : undefined; renderSummary(); drawScatter(); schedulePersist(); };
   });
   renderDetail(); renderSummary(); drawScatter();
   if (S.overview) drawOverview();
@@ -481,6 +541,7 @@ addEventListener('resize', () => { if (S.strokes.length && S.view === 'res'){ dr
 
 /* ============ démarrage ============ */
 loadPlayer();
+const restored = loadSession();   // restaure la dernière session locale si elle existe
 renderConn();
 renderSteppers();
-setTarget(10);
+if (!restored) setTarget(10);
