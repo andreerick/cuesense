@@ -163,11 +163,11 @@
     <h2 class="hero" style="font-size:17px;margin-bottom:16px">Sélectionnez un exercice</h2>
 
     <button class="exo-card" data-exo="points">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="3.2"/><circle cx="8" cy="15.5" r="3.2"/><circle cx="16" cy="15.5" r="3.2"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="12" r="3.2"/><circle cx="17" cy="12" r="3.2"/><line x1="10.2" y1="12" x2="13.8" y2="12"/></svg></span>
       <span>
-        <h3>Calibrage des coups</h3>
-        <p>Vérifiez la justesse de vos points d'impact sur l'axe vertical.</p>
-        <span class="badges"><span class="badge">10 coups par point</span><span class="badge green">Recommandé</span></span>
+        <h3>Alignement bille blanche</h3>
+        <p>Placez la bille blanche sur la ligne et une bille cible dans l'alignement de la bille bleue, toujours à la même distance.</p>
+        <span class="badges"><span class="badge">10 coups par série</span><span class="badge green">Recommandé</span></span>
       </span>
     </button>
 
@@ -189,16 +189,14 @@
   </div>
 
   <div id="exoConfig" class="hidden">
-    <h1 class="screen-title" id="exoCfgTitle">Exercice : Calibrage des coups</h1>
+    <h1 class="screen-title" id="exoCfgTitle">Exercice : Alignement bille blanche</h1>
     <div id="pointBlock">
-      <p class="center" style="font-weight:700;margin-top:10px">Point d'impact<br><span class="muted small" style="font-weight:500">Axe vertical</span></p>
-      <div class="seg" id="segPoint">
-        <button data-p="2">+2</button>
-        <button data-p="1">+1</button>
-        <button data-p="0" class="sel">0</button>
-        <button data-p="-1">-1</button>
-        <button data-p="-2">-2</button>
-      </div>
+      <p class="center" style="font-weight:700;margin-top:10px">Mise en place<br><span class="muted small" style="font-weight:500">Alignement sur la ligne</span></p>
+      <ol style="margin:10px 0 6px;padding:0 0 0 20px;line-height:1.8;font-size:15px">
+        <li>Placez la <strong>bille blanche</strong> sur la ligne.</li>
+        <li>Positionnez une <strong>bille cible</strong> dans l'alignement de la bille bleue.</li>
+        <li>La distance bille blanche → bille cible reste <strong>constante</strong> à chaque série.</li>
+      </ol>
     </div>
     <p class="center" style="font-weight:700;margin-top:20px">Nombre de coups</p>
     <div class="count-stepper">
@@ -223,10 +221,19 @@
           <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
           <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
           <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+          <!-- bille bleue (référence d'alignement) -->
+          <circle cx="261" cy="102" r="3" fill="#2980B9"/>
+          <!-- distance fixe : bille blanche → bille cible -->
+          <line x1="156" y1="110" x2="210" y2="110" stroke="#FFFFFF" stroke-width="1" opacity=".5"/>
+          <line x1="156" y1="108" x2="156" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+          <line x1="210" y1="108" x2="210" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+          <!-- bille cible à distance fixe, dans l'alignement de la bleue -->
+          <circle cx="210" cy="102" r="3.5" fill="#E74C3C" stroke="#C0392B" stroke-width=".8"/>
+          <!-- bille blanche sur la ligne -->
+          <circle cx="156" cy="102" r="3.5" fill="#FFFFFF" stroke="#AAAAAA" stroke-width=".8"/>
+          <!-- autres billes de référence -->
           <circle cx="156" cy="73"  r="2.4" fill="#F1C40F"/>
-          <circle cx="156" cy="102" r="2.4" fill="#8B4513"/>
           <circle cx="156" cy="131" r="2.4" fill="#27AE60"/>
-          <circle cx="261" cy="102" r="2.4" fill="#2980B9"/>
           <circle cx="350" cy="102" r="2.4" fill="#E75480"/>
           <circle cx="415" cy="102" r="2.4" fill="#111111"/>
         </svg>

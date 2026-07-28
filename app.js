@@ -288,11 +288,8 @@ $('btnStart').onclick = () => {
   schedulePersist();
 };
 function updateRunSub(){
-  $('exoRunSub').textContent = S.exo.type === 'points'
-    ? 'Point d’impact : ' + fmtPoint(S.exo.point) + ' · Axe vertical'
-    : EXOS[S.exo.type].sub;
+  $('exoRunSub').textContent = EXOS[S.exo.type].sub;
 }
-function fmtPoint(p){ return p > 0 ? '+' + p : String(p); }
 function updateRun(){
   $('exoCount').textContent = S.exo.count + ' / ' + S.exo.target;
   $('exoProg').style.width = Math.min(100, S.exo.count / S.exo.target * 100) + '%';
@@ -308,28 +305,14 @@ function exoStroke(s){
 }
 function finishSeries(){
   S.exo.active = false; S.flow.exo = true;
-  let next = null;
-  if (S.exo.type === 'points'){
-    const p = String(S.exo.point);
-    if (!S.exo.done.includes(p)) S.exo.done.push(p);
-    next = POINT_SEQ.find(q => !S.exo.done.includes(q)) ?? null;
-  }
   $('exoDone').innerHTML =
     `<div class="state ok">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>
-      <div class="tx"><b>Série terminée</b><span>${S.exo.count} coup${S.exo.count > 1 ? 's' : ''} enregistré${S.exo.count > 1 ? 's' : ''}${S.exo.type === 'points' ? ' au point ' + fmtPoint(S.exo.point) : ''}.</span></div>
+      <div class="tx"><b>Série terminée</b><span>${S.exo.count} coup${S.exo.count > 1 ? 's' : ''} enregistré${S.exo.count > 1 ? 's' : ''}.</span></div>
       <i class="pip"></i>
     </div>
-    ${next !== null ? `<button class="btn btn-primary" id="btnNextPt">Point suivant (${fmtPoint(+next)})</button>` : ''}
-    ${S.exo.type === 'points' && next === null ? `<div class="center muted small" style="margin-bottom:12px">Exercice complet — les 5 points sont calibrés !</div>` : ''}
     <button class="btn btn-valider" id="btnSeeRes">Voir les résultats</button>`;
   renderSteppers(); renderSeg(); schedulePersist();
-  const np = $('btnNextPt');
-  if (np) np.onclick = () => {
-    S.exo.point = +next; renderSeg(); updateRunSub();
-    S.exo.count = 0; S.exo.active = true;
-    $('exoDone').innerHTML = ''; updateRun(); schedulePersist();
-  };
   $('btnSeeRes').onclick = () => nav('res');
 }
 $('btnFinish').onclick = () => { S.exo.active = false; nav('res'); };
