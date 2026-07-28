@@ -34,11 +34,10 @@ const SVC = '0000ffe5-0000-1000-8000-00805f9a34fb',
       CHW = '0000ffe9-0000-1000-8000-00805f9a34fb';
 
 const EXOS = {
-  points: { name: 'Calibrage des coups', sub: 'Point d’impact sur l’axe vertical' },
-  speed:  { name: 'Vitesse du geste',    sub: 'Vitesse et régularité de la délivrance' },
-  repeat: { name: 'Répétabilité',        sub: 'Constance des coups dans le temps' },
+  points: { name: 'Alignement bille blanche', sub: 'Bille blanche sur la ligne · Bille cible dans l'axe de la bleue' },
+  speed:  { name: 'Vitesse du geste',         sub: 'Vitesse et régularité de la délivrance' },
+  repeat: { name: 'Répétabilité',             sub: 'Constance des coups dans le temps' },
 };
-const POINT_SEQ = ['2','1','0','-1','-2'];
 
 const fmt = (x, d = 2) => isFinite(x) ? x.toFixed(d) : '—';
 const mu = x => x.reduce((p, c) => p + c, 0) / x.length;
