@@ -525,7 +525,7 @@ addEventListener('resize', () => { if (S.strokes.length && S.view === 'res'){ dr
 /* ============ zoom image exercice ============ */
 (function(){
   const btn = $('posZoomBtn'), modal = $('zoomModal'), close = $('zoomClose'), backdrop = $('zoomBackdrop');
-  if (!btn || !modal) return;
+  if (!btn || !modal){ console.warn('CueSense: zoom elements not found'); return; }
   function openZoom(){ modal.classList.remove('hidden'); close.focus(); document.addEventListener('keydown', onEsc); }
   function closeZoom(){ modal.classList.add('hidden'); document.removeEventListener('keydown', onEsc); btn.focus(); }
   function onEsc(e){ if (e.key === 'Escape') closeZoom(); }
