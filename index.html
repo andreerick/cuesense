@@ -212,31 +212,34 @@
     <div class="card" id="posCard">
       <div class="section-label">Position de l'iPhone</div>
       <div class="table-pos">
-        <!-- proportions réelles : extérieur 383×204 cm, surface de jeu 357×178 cm -->
-        <svg viewBox="0 0 470 204" aria-hidden="true">
-          <rect x="12" y="80" width="20" height="44" rx="4" fill="#242424" stroke="#9BA39E"/>
-          <circle cx="22" cy="102" r="4" fill="#27AE60"/>
-          <line x1="38" y1="102" x2="460" y2="102" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="5 5" opacity=".6"/>
-          <rect x="70" y="0" width="383" height="204" rx="10" fill="#2C2C2C"/>
-          <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
-          <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
-          <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
-          <!-- bille bleue (référence d'alignement) -->
-          <circle cx="261" cy="102" r="3" fill="#2980B9"/>
-          <!-- distance fixe : bille blanche → bille cible -->
-          <line x1="156" y1="110" x2="210" y2="110" stroke="#FFFFFF" stroke-width="1" opacity=".5"/>
-          <line x1="156" y1="108" x2="156" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
-          <line x1="210" y1="108" x2="210" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
-          <!-- bille cible à distance fixe, dans l'alignement de la bleue -->
-          <circle cx="210" cy="102" r="3.5" fill="#E74C3C" stroke="#C0392B" stroke-width=".8"/>
-          <!-- bille blanche sur la ligne -->
-          <circle cx="156" cy="102" r="3.5" fill="#FFFFFF" stroke="#AAAAAA" stroke-width=".8"/>
-          <!-- autres billes de référence -->
-          <circle cx="156" cy="73"  r="2.4" fill="#F1C40F"/>
-          <circle cx="156" cy="131" r="2.4" fill="#27AE60"/>
-          <circle cx="350" cy="102" r="2.4" fill="#E75480"/>
-          <circle cx="415" cy="102" r="2.4" fill="#111111"/>
-        </svg>
+        <button class="pos-zoom-btn" id="posZoomBtn" aria-label="Agrandir le schéma de position" aria-haspopup="dialog">
+          <!-- proportions réelles : extérieur 383×204 cm, surface de jeu 357×178 cm -->
+          <svg viewBox="0 0 470 204" aria-hidden="true">
+            <rect x="12" y="80" width="20" height="44" rx="4" fill="#242424" stroke="#9BA39E"/>
+            <circle cx="22" cy="102" r="4" fill="#27AE60"/>
+            <line x1="38" y1="102" x2="460" y2="102" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="5 5" opacity=".6"/>
+            <rect x="70" y="0" width="383" height="204" rx="10" fill="#2C2C2C"/>
+            <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
+            <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+            <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+            <!-- bille bleue (référence d'alignement) -->
+            <circle cx="261" cy="102" r="3" fill="#2980B9"/>
+            <!-- distance fixe : bille blanche → bille cible -->
+            <line x1="156" y1="110" x2="210" y2="110" stroke="#FFFFFF" stroke-width="1" opacity=".5"/>
+            <line x1="156" y1="108" x2="156" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+            <line x1="210" y1="108" x2="210" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+            <!-- bille cible à distance fixe, dans l'alignement de la bleue -->
+            <circle cx="210" cy="102" r="3.5" fill="#E74C3C" stroke="#C0392B" stroke-width=".8"/>
+            <!-- bille blanche sur la ligne -->
+            <circle cx="156" cy="102" r="3.5" fill="#FFFFFF" stroke="#AAAAAA" stroke-width=".8"/>
+            <!-- autres billes de référence -->
+            <circle cx="156" cy="73"  r="2.4" fill="#F1C40F"/>
+            <circle cx="156" cy="131" r="2.4" fill="#27AE60"/>
+            <circle cx="350" cy="102" r="2.4" fill="#E75480"/>
+            <circle cx="415" cy="102" r="2.4" fill="#111111"/>
+          </svg>
+          <span class="pos-zoom-hint">🔍 Toucher pour agrandir</span>
+        </button>
         <p>Dans l'axe de la table, derrière la ligne de fond.</p>
       </div>
     </div>
@@ -364,6 +367,38 @@
     </button>
   </div>
 </nav>
+
+<!-- ===================== ZOOM MODAL ===================== -->
+<div id="zoomModal" role="dialog" aria-modal="true" aria-labelledby="zoomModalTitle" class="zoom-modal hidden">
+  <div class="zoom-backdrop" id="zoomBackdrop"></div>
+  <div class="zoom-dialog">
+    <div class="zoom-header">
+      <span id="zoomModalTitle">Position de l'iPhone</span>
+      <button class="zoom-close" id="zoomClose" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <svg viewBox="0 0 470 204" role="img" aria-label="Schéma de position de l'iPhone sur la table de snooker">
+      <rect x="12" y="80" width="20" height="44" rx="4" fill="#242424" stroke="#9BA39E"/>
+      <circle cx="22" cy="102" r="4" fill="#27AE60"/>
+      <line x1="38" y1="102" x2="460" y2="102" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="5 5" opacity=".6"/>
+      <rect x="70" y="0" width="383" height="204" rx="10" fill="#2C2C2C"/>
+      <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
+      <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+      <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+      <circle cx="261" cy="102" r="3" fill="#2980B9"/>
+      <line x1="156" y1="110" x2="210" y2="110" stroke="#FFFFFF" stroke-width="1" opacity=".5"/>
+      <line x1="156" y1="108" x2="156" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+      <line x1="210" y1="108" x2="210" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+      <circle cx="210" cy="102" r="3.5" fill="#E74C3C" stroke="#C0392B" stroke-width=".8"/>
+      <circle cx="156" cy="102" r="3.5" fill="#FFFFFF" stroke="#AAAAAA" stroke-width=".8"/>
+      <circle cx="156" cy="73"  r="2.4" fill="#F1C40F"/>
+      <circle cx="156" cy="131" r="2.4" fill="#27AE60"/>
+      <circle cx="350" cy="102" r="2.4" fill="#E75480"/>
+      <circle cx="415" cy="102" r="2.4" fill="#111111"/>
+    </svg>
+  </div>
+</div>
 
 <script src="state.js"></script>
 <script src="charts.js"></script>

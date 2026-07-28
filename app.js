@@ -522,6 +522,18 @@ $('fileIn').onchange = e => {
 
 addEventListener('resize', () => { if (S.strokes.length && S.view === 'res'){ drawOverview(); renderDetail(); drawScatter(); } });
 
+/* ============ zoom image exercice ============ */
+(function(){
+  const btn = $('posZoomBtn'), modal = $('zoomModal'), close = $('zoomClose'), backdrop = $('zoomBackdrop');
+  if (!btn || !modal) return;
+  function openZoom(){ modal.classList.remove('hidden'); close.focus(); document.addEventListener('keydown', onEsc); }
+  function closeZoom(){ modal.classList.add('hidden'); document.removeEventListener('keydown', onEsc); btn.focus(); }
+  function onEsc(e){ if (e.key === 'Escape') closeZoom(); }
+  btn.addEventListener('click', openZoom);
+  close.addEventListener('click', closeZoom);
+  backdrop.addEventListener('click', closeZoom);
+})();
+
 /* ============ démarrage ============ */
 loadPlayer();
 const restored = loadSession();   // restaure la dernière session locale si elle existe
