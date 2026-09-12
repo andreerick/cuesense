@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>CueSense · Analyse du geste au snooker</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='24' fill='none' stroke='%2327AE60' stroke-width='6' stroke-dasharray='118 33' transform='rotate(-45 32 34)'/%3E%3Cline x1='16' y1='50' x2='50' y2='16' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="cuesense.css">
+</head>
+<body>
+
+<!-- ===================== SPLASH ===================== -->
+<div id="splash">
+  <svg class="logo" viewBox="0 0 96 96" aria-hidden="true">
+    <circle cx="46" cy="52" r="34" fill="none" stroke="#27AE60" stroke-width="7"
+            stroke-linecap="round" stroke-dasharray="168 46" transform="rotate(-50 46 52)"/>
+    <circle cx="38" cy="60" r="9" fill="#FFFFFF"/>
+    <line x1="26" y1="72" x2="68" y2="30" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+    <path d="M72 20a16 16 0 0 1 11 11" fill="none" stroke="#27AE60" stroke-width="5" stroke-linecap="round"/>
+    <path d="M78 10a26 26 0 0 1 17 17" fill="none" stroke="#27AE60" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <div class="wordmark">Cue<em>Sense</em></div>
+  <div class="tagline">Analyse du geste au snooker</div>
+  <div class="progress"><i></i></div>
+  <div class="charge">Chargement…</div>
+  <div class="v">v1.0.0</div>
+</div>
+
+<!-- ===================== 1 · JOUEUR ===================== -->
+<section id="viewJoueur" class="screen">
+  <h1 class="screen-title">1. Identification du joueur</h1>
+  <div class="stepper" data-step="1"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+  </div>
+  <h2 class="hero">Bienvenue</h2>
+  <p class="hero-sub">Veuillez vous identifier</p>
+  <div class="field">
+    <label for="playerName">Nom du joueur</label>
+    <div class="input-wrap">
+      <input type="text" id="playerName" placeholder="Votre nom" autocomplete="name">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+    </div>
+  </div>
+  <div class="field">
+    <label for="playerLevel">Niveau</label>
+    <div class="input-wrap">
+      <select id="playerLevel">
+        <option>Débutant</option>
+        <option selected>Intermédiaire</option>
+        <option>Avancé</option>
+        <option>Professionnel</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="btnPlayerGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnPlayerReset">Changer de joueur</button>
+  <div class="about">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.5" r=".5" fill="currentColor"/></svg>
+    <div>
+      <h3>À propos de CueSense</h3>
+      <p>CueSense est une application qui analyse votre geste au snooker grâce à un capteur
+      inertiel WT9011DCL fixé à l'arrière de la queue. Elle vous aide à progresser en vous
+      fournissant des données précises et objectives.</p>
+    </div>
+  </div>
+  <div class="version">v1.0.0</div>
+</section>
+
+<!-- ===================== 2 · CONNEXION ===================== -->
+<section id="viewConn" class="screen hidden">
+  <h1 class="screen-title">2. Connexion du capteur</h1>
+  <div class="stepper" data-step="2"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+  </div>
+  <h2 class="hero" id="connName">Capteur WT9011DCL</h2>
+  <p class="hero-sub" id="connSub">Aucun capteur connecté</p>
+
+  <div class="state err" id="connState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+    <div class="tx"><b id="connStateTxt">Déconnecté</b><span id="connStateSub">Connectez le capteur pour commencer</span></div>
+    <i class="pip"></i>
+  </div>
+  <div class="state" id="battState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="17" height="9" rx="2.5"/><path d="M21.5 11v3"/><rect id="battFill" x="4" y="10" width="0" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+    <div class="tx"><b>Batterie <span id="battPct">—</span></b><span id="battSub">Niveau lu depuis le capteur</span></div>
+    <i class="pip" style="opacity:0" id="battPip"></i>
+  </div>
+
+  <div class="card">
+    <div class="controls" style="justify-content:space-between">
+      <label for="selRate" style="font-weight:600">Fréquence du capteur</label>
+      <select id="selRate" title="Fréquence capteur">
+        <option value="0x0B" selected>200 Hz</option>
+        <option value="0x09">100 Hz</option>
+        <option value="0x08">50 Hz</option>
+        <option value="0x06">10 Hz</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnConnect">Connecter le capteur</button>
+  <button class="btn btn-primary hidden" id="btnConnGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnDisc" disabled>Déconnecter</button>
+
+  <div class="banner hidden" id="noBle">
+    <b>Web Bluetooth indisponible dans ce navigateur.</b><br>
+    Sur iPhone : ouvrir cette page dans <b>Bluefy</b> (App Store) pour le direct,
+    ou enregistrer avec l'app WITMOTION puis importer le fichier dans <b>Résultats</b>.
+  </div>
+</section>
+
+<!-- ===================== 3 · CALIBRAGE ===================== -->
+<section id="viewCalib" class="screen hidden">
+  <h1 class="screen-title">3. Vérification du calibrage</h1>
+  <div class="stepper" data-step="3"></div>
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+  </div>
+  <h2 class="hero">Calibrage du capteur</h2>
+  <p class="hero-sub">Placez la queue à l'horizontale et restez immobile.<br>Durée : 3 secondes</p>
+
+  <div class="progress"><i id="calProg"></i></div>
+  <div class="big-num" id="inclNum">—</div>
+  <div class="big-num-sub">Inclinaison</div>
+  <div id="calResult"></div>
+
+  <button class="btn btn-valider" id="btnVerify">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>
+    Vérifier le calibrage
+  </button>
+  <button class="btn btn-secondary" id="btnCal">Calibrer l'axe — limage 2 s</button>
+
+  <div class="card">
+    <div class="section-label">Réglages de détection</div>
+    <div class="controls">
+      <label>Seuil de coup <input type="range" id="thr" min="0.3" max="4" step="0.1" value="0.8"><span id="thrV">0.8 g</span></label>
+      <label>Axe queue
+        <select id="axSel"><option value="auto" selected>auto</option><option value="ax">X</option><option value="ay">Y</option><option value="az">Z</option></select>
+        <span id="cueAxLbl" style="color:var(--green-hi)">—</span>
+      </label>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnCalibGo">Continuer
+    <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+</section>
+
+<!-- ===================== 4 · EXERCICES ===================== -->
+<section id="viewExo" class="screen hidden">
+
+  <div id="exoChoose">
+    <h1 class="screen-title">4. Choix des exercices</h1>
+    <div class="stepper" data-step="4"></div>
+    <h2 class="hero" style="font-size:17px;margin-bottom:16px">Sélectionnez un exercice</h2>
+
+    <button class="exo-card" data-exo="points">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="12" r="3.2"/><circle cx="17" cy="12" r="3.2"/><line x1="10.2" y1="12" x2="13.8" y2="12"/></svg></span>
+      <span>
+        <h3>Alignement bille blanche</h3>
+        <p>Placez la bille blanche sur le point de la bille marron et une bille cible à une distance de votre choix, toujours identique.</p>
+        <span class="badges"><span class="badge">5 coups par série</span><span class="badge green">Recommandé</span></span>
+      </span>
+    </button>
+
+    <button class="exo-card" data-exo="speed">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="4"/><circle cx="15" cy="15" r="4"/><path d="M19.5 4.5l1.8-1.8"/></svg></span>
+      <span>
+        <h3>Vitesse du geste</h3>
+        <p>Analysez la vitesse et la régularité de votre geste.</p>
+      </span>
+    </button>
+
+    <button class="exo-card" data-exo="repeat">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21"/></svg></span>
+      <span>
+        <h3>Répétabilité</h3>
+        <p>Mesurez la constance de vos coups dans le temps.</p>
+      </span>
+    </button>
+  </div>
+
+  <div id="exoConfig" class="hidden">
+    <h1 class="screen-title">4. Alignement bille blanche</h1>
+    <div class="stepper" data-step="4"></div>
+    <div id="pointBlock">
+      <p class="center" style="font-weight:700;margin-top:10px">Mise en place de l'exercice.</p>
+      <ol style="margin:10px 0 6px;padding:0 0 0 20px;line-height:1.8;font-size:15px">
+        <li>Placez la <strong>bille blanche</strong> sur le <strong>point de la bille marron</strong>.</li>
+        <li>Positionnez la <strong>bille choc</strong> dans l'alignement marron-bleu, à une <strong>distance définie</strong> pour chaque coup de la série.</li>
+      </ol>
+      <div class="field" style="max-width:220px;margin:14px auto 0">
+        <label for="targetDistIn">Distance bille cible (cm)</label>
+        <div class="input-wrap">
+          <input type="number" id="targetDistIn" inputmode="decimal" min="10" max="300" step="1" value="30">
+        </div>
+      </div>
+    </div>
+    <div class="card" id="setupCard">
+      <div class="section-label" style="text-align:center">Mise en place sur la table</div>
+      <div class="table-pos">
+        <svg viewBox="0 0 470 204" role="img" aria-label="Bille blanche au point de la bille marron, bille cible à la distance choisie">
+          <rect x="70" y="0" width="383" height="204" rx="10" fill="#2C2C2C"/>
+          <rect x="83" y="13" width="357" height="178" fill="#196F3D"/>
+          <line x1="156" y1="13" x2="156" y2="191" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+          <path d="M156 73a29 29 0 0 0 0 58" fill="none" stroke="#EFE9DA" stroke-width="1.5" opacity=".65"/>
+          <!-- point de la bille marron : la blanche s'y place -->
+          <circle cx="156" cy="102" r="5" fill="#6F4E37"/>
+          <!-- distance choisie par le joueur : bille blanche → bille cible -->
+          <line x1="156" y1="110" x2="210" y2="110" stroke="#FFFFFF" stroke-width="1" opacity=".5"/>
+          <line x1="156" y1="108" x2="156" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+          <line x1="210" y1="108" x2="210" y2="112" stroke="#FFFFFF" stroke-width="1" opacity=".7"/>
+          <!-- bille cible, a la distance choisie par le joueur -->
+          <circle cx="210" cy="102" r="3.5" fill="#E74C3C" stroke="#C0392B" stroke-width=".8"/>
+          <!-- bille blanche sur le point marron -->
+          <circle cx="156" cy="102" r="3.5" fill="#FFFFFF" stroke="#AAAAAA" stroke-width=".8"/>
+        </svg>
+        <p>Bille blanche sur le point de la bille marron, bille cible à la distance choisie.</p>
+      </div>
+    </div>
+
+    <div class="card" id="contactCard">
+      <div class="controls" style="align-items:stretch;gap:20px">
+        <div class="table-pos" style="flex:1;min-width:200px;display:flex;flex-direction:column">
+          <div class="section-label" style="text-align:center">Point de contact sur bille blanche</div>
+          <svg viewBox="0 0 300 180" role="img" aria-label="5 points de contact possibles sur la bille, de +2 à -2">
+            <circle cx="150" cy="90" r="51" fill="var(--white)" stroke="var(--muted)" stroke-width="1"/>
+            <circle cx="150" cy="48" r="6" fill="var(--muted)"/>
+            <circle cx="150" cy="69" r="6" fill="var(--muted)"/>
+            <circle cx="150" cy="90" r="7" fill="var(--green-hi)"/>
+            <circle cx="150" cy="111" r="6" fill="var(--muted)"/>
+            <circle cx="150" cy="132" r="6" fill="var(--muted)"/>
+            <g font-size="18" font-weight="700" fill="var(--red)" text-anchor="start" dominant-baseline="middle">
+              <text x="159" y="48">+2</text>
+              <text x="159" y="69">+1</text>
+              <text x="160" y="90" fill="var(--green-hi)">0</text>
+              <text x="159" y="111">-1</text>
+              <text x="159" y="132">-2</text>
+            </g>
+          </svg>
+          <p style="text-align:center">Choisi ton point de contact sur la bille blanche.</p>
+        </div>
+        <div class="table-pos" style="flex:1;min-width:200px;display:flex;flex-direction:column">
+          <div class="section-label" style="text-align:center">Point de contact sur bille choc</div>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Bille blanche et bille rouge, contact 1/1, 3/4, 1/2 et 1/4 de bille">
+            <defs>
+              <marker id="contactArrow" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0,10 L5,0 L10,10 z" fill="var(--muted)"/>
+              </marker>
+            </defs>
+            <g transform="translate(0,35)">
+              <line x1="50" y1="106" x2="50" y2="10" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#contactArrow)"/>
+              <circle cx="50" cy="54" r="32" fill="var(--red)" stroke="var(--line)" stroke-width="1"/>
+              <circle cx="50" cy="110" r="32" fill="var(--white)" stroke="var(--muted)" stroke-width="1"/>
+              <circle cx="50" cy="82" r="6" fill="var(--green-hi)"/>
+              <text x="50" y="155" font-size="14" font-weight="700" fill="var(--white)" text-anchor="middle">1/1</text>
+
+              <line x1="150" y1="106" x2="150" y2="10" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#contactArrow)"/>
+              <circle cx="144" cy="54" r="32" fill="var(--red)" stroke="var(--line)" stroke-width="1"/>
+              <circle cx="150" cy="110" r="32" fill="var(--white)" stroke="var(--muted)" stroke-width="1"/>
+              <circle cx="147" cy="82" r="6" fill="var(--green-hi)"/>
+              <text x="150" y="155" font-size="14" font-weight="700" fill="var(--white)" text-anchor="middle">3/4</text>
+
+              <line x1="250" y1="106" x2="250" y2="10" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#contactArrow)"/>
+              <circle cx="230" cy="54" r="32" fill="var(--red)" stroke="var(--line)" stroke-width="1"/>
+              <circle cx="250" cy="110" r="32" fill="var(--white)" stroke="var(--muted)" stroke-width="1"/>
+              <circle cx="240" cy="82" r="6" fill="var(--green-hi)"/>
+              <text x="250" y="155" font-size="14" font-weight="700" fill="var(--white)" text-anchor="middle">1/2</text>
+
+              <line x1="350" y1="106" x2="350" y2="10" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#contactArrow)"/>
+              <circle cx="314" cy="54" r="32" fill="var(--red)" stroke="var(--line)" stroke-width="1"/>
+              <circle cx="350" cy="110" r="32" fill="var(--white)" stroke="var(--muted)" stroke-width="1"/>
+              <circle cx="332" cy="82" r="6" fill="var(--green-hi)"/>
+              <text x="350" y="155" font-size="14" font-weight="700" fill="var(--white)" text-anchor="middle">1/4</text>
+            </g>
+          </svg>
+          <p style="text-align:center">Choisi ton point de contact sur la bille choc.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="center" style="font-weight:700;margin-top:20px">Nombre de coups</p>
+    <div class="count-stepper">
+      <button id="cntMinus" aria-label="moins">−</button>
+      <div class="val" id="cntVal">5</div>
+      <button id="cntPlus" aria-label="plus">+</button>
+    </div>
+    <p class="center muted small" id="cntDefault">Par défaut</p>
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" id="btnStart">Démarrer l'exercice</button>
+  </div>
+
+  <div id="exoRun" class="hidden">
+    <h1 class="screen-title" id="exoRunTitle">Exercice</h1>
+    <p class="center muted small" id="exoRunSub"></p>
+    <div class="big-num" id="exoCount">0 / 10</div>
+    <div class="big-num-sub">coups détectés</div>
+    <div class="progress"><i id="exoProg"></i></div>
+    <div id="exoDone"></div>
+
+    <div class="panel">
+      <h2>Axe queue <span id="cueAxLbl2" class="accent">—</span> · longitudinal <span style="color:var(--white)">▬</span> · latéral <span class="accent">▬</span> (g)</h2>
+      <canvas id="cCue" class="tall"></canvas>
+      <div class="controls" style="margin-top:10px;justify-content:space-between">
+        <label><input type="checkbox" id="chk3ax"> vue 3 axes</label>
+        <button class="btn btn-secondary compact" id="btnRecord">⏺ Enregistrer CSV</button>
+      </div>
+    </div>
+    <div id="threeAx" class="hidden">
+      <div class="panel">
+        <h2>Accélération (g)</h2>
+        <canvas id="cAcc"></canvas>
+        <div class="legend"><i><span class="dot" style="background:var(--white)"></span>X</i><i><span class="dot" style="background:var(--green-hi)"></span>Y</i><i><span class="dot" style="background:var(--yellow)"></span>Z</i></div>
+      </div>
+      <div class="panel"><h2>Vitesse angulaire (°/s)</h2><canvas id="cGyr"></canvas></div>
+      <div class="panel"><h2>Angles (°)</h2><canvas id="cAng"></canvas>
+        <div class="stats">
+          <div class="cell"><div class="k">Roll</div><div class="v" id="vR">—</div></div>
+          <div class="cell"><div class="k">Pitch</div><div class="v" id="vP">—</div></div>
+          <div class="cell"><div class="k">Yaw</div><div class="v" id="vY">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stats" id="lastStroke"></div>
+    <div style="height:14px"></div>
+    <div class="btn-row">
+      <button class="btn btn-valider" id="btnFinish">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>
+        Terminer
+      </button>
+      <button class="btn btn-annuler" id="btnAbort">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        Annuler
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 5 · RÉSULTATS ===================== -->
+<section id="viewRes" class="screen wide hidden">
+  <h1 class="screen-title">Résultats <span id="nStrokes" class="muted"></span></h1>
+  <p class="center muted small" id="resPlayer" style="margin-bottom:14px"></p>
+
+  <div class="panel">
+    <h2>Session</h2>
+    <div class="controls">
+      <input type="file" id="fileIn" accept=".csv,.txt,.tsv">
+      <label>fréquence si pas de colonne temps
+        <input id="fsIn" type="number" class="inline" value="200" min="1" max="1000"> Hz
+      </label>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn-secondary compact" id="btnDemo" title="Session synthétique pour tester l'interface">Démo</button>
+      <button class="btn btn-secondary compact" id="btnJson">Exporter JSON</button>
+      <button class="btn btn-secondary compact" id="btnCsv" disabled>Exporter CSV</button>
+      <button class="btn btn-annuler compact" id="btnClear">Effacer</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Options du capteur</h2>
+    <div class="controls" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px">
+      <label><input type="checkbox" class="metricChk" data-key="accel" checked> Accélération (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="vitesse" checked> Vitesse</label>
+      <label><input type="checkbox" class="metricChk" data-key="lat" checked> Déviation latérale</label>
+      <label><input type="checkbox" class="metricChk" data-key="pause" checked> Pause</label>
+      <label><input type="checkbox" class="metricChk" data-key="dist" checked> Distance parcourue par la bille blanche</label>
+      <label><input type="checkbox" class="metricChk" data-key="back" checked> Recul de la queue</label>
+    </div>
+    <div class="section-label" style="margin-top:14px">Axes bruts du capteur</div>
+    <div class="controls" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px">
+      <label><input type="checkbox" class="metricChk" data-key="ax"> Accélération X (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="ay"> Accélération Y (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="az"> Accélération Z (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="gx"> Vitesse angulaire X (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="gy"> Vitesse angulaire Y (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="gz"> Vitesse angulaire Z (pic)</label>
+      <label><input type="checkbox" class="metricChk" data-key="roll"> Roll (plage)</label>
+      <label><input type="checkbox" class="metricChk" data-key="pitch"> Pitch (plage)</label>
+      <label><input type="checkbox" class="metricChk" data-key="yaw"> Yaw (plage)</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Coups détectés</h2>
+    <div class="table-scroll" id="tblWrap"><div class="empty">Aucun coup. Connectez le capteur et lancez un exercice, importez un enregistrement, ou lancez la démo.</div></div>
+  </div>
+
+  <div class="panel hidden" id="overviewP">
+    <h2>Session importée — écart avec le coup précédent, cliquez pour sélectionner</h2>
+    <div class="controls" style="margin-bottom:10px">
+      <label>Paramètre affiché
+        <select id="selOverviewParam"></select>
+      </label>
+    </div>
+    <div id="cOverMain"></div>
+  </div>
+</section>
+
+<!-- ===================== ONGLETS ===================== -->
+<nav class="tabbar" aria-label="Navigation principale">
+  <div class="tabbar-inner">
+    <button data-nav="joueur" class="active" aria-label="Joueur">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+      Joueur
+    </button>
+    <button data-nav="conn" aria-label="Connexion">
+      <i class="pipdot" id="connPip"></i>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+      Connexion
+    </button>
+    <button data-nav="calib" aria-label="Calibrage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      Calibrage
+    </button>
+    <button data-nav="exo" aria-label="Exercices">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="3.2"/><circle cx="8" cy="15.5" r="3.2"/><circle cx="16" cy="15.5" r="3.2"/></svg>
+      Exercices
+    </button>
+    <button data-nav="res" aria-label="Résultats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20v-8M12 20V4M19 20v-11"/></svg>
+      Résultats
+    </button>
+  </div>
+</nav>
+
+<script src="state.js"></script>
+<script src="charts.js"></script>
+<script src="analysis.js"></script>
+<script src="sensor.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

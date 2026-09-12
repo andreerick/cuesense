@@ -1,0 +1,35 @@
+name: Deploy site via SFTP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage deploy files
+        run: |
+          mkdir deploy
+          git ls-files --cached --others --exclude-standard \
+            | grep -v '^\.github/' \
+            | grep -v '^\.claude/' \
+            | grep -v '\.md$' \
+            | tar cf - -T - \
+            | tar xf - -C deploy
+
+      - name: Upload site over SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          port: ${{ secrets.SFTP_PORT }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          ssh_private_key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          local_path: './deploy/*'
+          remote_path: ${{ secrets.SFTP_REMOTE_DIR }}
+          sftp_only: true
